@@ -287,6 +287,14 @@ td:first-child { font: 700 1.05rem var(--font-display); }
 .care-grid p:last-child { margin-bottom:0; }
 .care-grid .health-card { grid-column:1/-1; }
 .care-note { margin:16px 0 0; padding-top:12px; border-top:1px solid var(--line); color:var(--muted); font-size:.83rem; }
+.health-tool { padding:clamp(16px,3vw,28px); background:var(--surface); border:1px solid var(--line); border-radius:16px; }
+#health-form { display:grid; gap:9px; max-width:680px; margin-top:18px; }
+#health-form label { font-weight:700; margin-top:6px; }
+#health-form input, #health-form select, #health-form textarea { width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:9px; background:var(--bg); color:var(--fg); font:inherit; }
+#health-form input[type=file] { padding:9px; }
+#health-form .btn { justify-self:start; border:0; cursor:pointer; font:inherit; }
+#health-form .btn:disabled { opacity:.65; cursor:wait; }
+.health-result { margin-top:16px; padding:16px; border:1px solid var(--line); border-radius:11px; background:var(--bg); white-space:pre-wrap; line-height:1.6; }
 @media (max-width:600px) {
   .care-grid { grid-template-columns:1fr; }
   .care-grid .health-card { grid-column:auto; }
