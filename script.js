@@ -67,6 +67,62 @@
   document.getElementById('glance-body').innerHTML = rows;
   document.getElementById('glance-note').textContent = total + ' breeds across 3 animals. Ranges cover all breeds listed for each animal.';
 
+  /* Photo based health information. The API key stays on the backend. */
+  var healthForm = document.getElementById('health-form');
+  healthForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    var photo = document.getElementById('health-photo').files[0];
+    var result = document.getElementById('health-result');
+    var button = document.getElementById('health-submit');
+    if (!photo || photo.size > 8 * 1024 * 1024) {
+      result.hidden = false;
+      result.textContent = photo ? 'Please choose an image smaller than 8 MB.' : 'Please choose a photo first.';
+      return;
+    }
+    button.disabled = true;
+    button.textContent = 'Reviewing photo…';
+    result.hidden = false;
+    result.textContent = 'Sending the photo for review. This may take a few seconds.';
+    try {
+      var dataUrl = await new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onload = function () { resolve(reader.result); };
+        reader.onerror = reject;
+        reader.readAsDataURL(photo);
+      });
+      var apiBase = (window.DIGITAL_DAIRY_API_BASE || '').replace(/\/$/, '');
+      var response = await fetch(apiBase + '/api/animal-health', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ animal: document.getElementById('health-animal').value,
+          notes: document.getElementById('health-notes').value, image: dataUrl })
+      });
+      var responseText = await response.text();
+      var payload;
+      try {
+        payload = responseText ? JSON.parse(responseText) : {};
+      } catch (parseError) {
+        payload = {};
+      }
+      if (!payload || typeof payload !== 'object') payload = {};
+      if (!responseText.trim()) {
+        throw new Error('The health service returned an empty response. Check that your backend is running and the site is pointing to it.');
+      }
+      if (!response.ok && !payload.error) {
+        throw new Error('The health service returned an unexpected response (HTTP ' + response.status + '). Check the backend URL and server logs.');
+      }
+      if (!response.ok) throw new Error(payload.error || 'The photo could not be reviewed.');
+      if (typeof payload.guidance !== 'string' || !payload.guidance.trim()) {
+        throw new Error('The health service response did not include guidance. Try again.');
+      }
+      result.textContent = payload.guidance;
+    } catch (error) {
+      result.textContent = error.message || 'Could not connect. Make sure the app server is running.';
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Review photo';
+    }
+  });
+
   /* Home: animal cards */
   document.getElementById('species-cards').innerHTML = KEYS.map(function (k) {
     var s = SPECIES[k];
