@@ -49,6 +49,24 @@
         <div class="species" id="species-cards"></div>
       </div>
 
+      <section class="block health-tool" aria-labelledby="health-title">
+        <h2 class="sec" id="health-title">AI animal health helper</h2>
+        <p class="lead">Upload a clear photo of a cow, goat or buffalo and describe what you have noticed. You’ll get possible causes and safe next steps.</p>
+        <form id="health-form">
+          <label for="health-animal">Animal</label>
+          <select id="health-animal" name="animal" required>
+            <option value="cow">Cow</option><option value="goat">Goat</option><option value="buffalo">Buffalo</option>
+          </select>
+          <label for="health-photo">Photo (JPEG, PNG or WebP; up to 8 MB)</label>
+          <input id="health-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required>
+          <label for="health-notes">What symptoms or changes have you noticed?</label>
+          <textarea id="health-notes" name="notes" rows="3" maxlength="1200" placeholder="For example: not eating since yesterday, swelling near the eye"></textarea>
+          <button class="btn" type="submit" id="health-submit">Review photo</button>
+        </form>
+        <p class="care-note">This is an educational aid, not a veterinarian or a diagnosis. It cannot reliably confirm a disease from a photo or prescribe a cure. For severe symptoms, contact a veterinarian urgently. Do not give medicines based only on this result.</p>
+        <div id="health-result" class="health-result" aria-live="polite" hidden></div>
+      </section>
+
       <div class="block">
         <h2 class="sec">What you can learn about each animal</h2>
         <dl class="covers">
