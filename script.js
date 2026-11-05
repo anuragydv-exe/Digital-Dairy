@@ -46,6 +46,63 @@
   };
   var KEYS = ['cow', 'buffalo', 'goat'];
 
+  function activateCustomer(name) {
+    try { sessionStorage.setItem('digitalDairyCustomerName', name); } catch (e) {}
+    document.getElementById('login-screen').hidden = true;
+    document.getElementById('site-app').hidden = false;
+    document.getElementById('customer-greeting').textContent = 'Hello, ' + name;
+    apply(parse(location.hash));
+  }
+
+  document.getElementById('login-form').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    var form = event.currentTarget;
+    var status = document.getElementById('login-status');
+    var button = document.getElementById('login-submit');
+    var name = form.elements.name.value.trim();
+    var phone = form.elements.phone.value.trim();
+    if (!name || !phone || !form.elements.consent.checked) {
+      status.className = 'login-status error';
+      status.textContent = 'Enter your name and phone number, then agree to the notice.';
+      return;
+    }
+    button.disabled = true;
+    button.textContent = 'Saving…';
+    status.className = 'login-status';
+    status.textContent = 'Saving your customer details…';
+    try {
+      var response = await fetch('/api/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, phone: phone, consent: true })
+      });
+      var text = await response.text();
+      var payload = {};
+      try { payload = text ? JSON.parse(text) : {}; } catch (e) {}
+      if (!response.ok && !payload.error && (response.status === 404 || response.status === 405)) {
+        throw new Error('This preview has no customer server. Use the Render site, or run the Node app and open http://localhost:3000.');
+      }
+      if (!response.ok) throw new Error(payload.error || 'Could not save your details. Please try again.');
+      if (!payload.name) throw new Error('The customer service returned an unexpected response.');
+      activateCustomer(payload.name);
+    } catch (error) {
+      status.className = 'login-status error';
+      status.textContent = error.message || 'Could not connect. Please try again later.';
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Continue';
+    }
+  });
+
+  document.getElementById('sign-out').addEventListener('click', function () {
+    try { sessionStorage.removeItem('digitalDairyCustomerName'); } catch (e) {}
+    document.getElementById('customer-greeting').textContent = '';
+    document.getElementById('site-app').hidden = true;
+    document.getElementById('login-screen').hidden = false;
+    document.getElementById('login-form').reset();
+    document.getElementById('login-status').textContent = '';
+    document.getElementById('customer-name').focus();
+  });
+
   function dash(a, b) { return a === b ? String(a) : a + '–' + b; }
   function yieldText(a) { return dash(a[0], a[1]); }
   function fatText(a) { return a[0] === a[1] ? a[0].toFixed(1) : a[0].toFixed(1) + '–' + a[1].toFixed(1); }
@@ -225,5 +282,11 @@
   window.addEventListener('hashchange', function () {
     if (apply(parse(location.hash))) window.scrollTo(0, 0);
   });
-  apply(parse(location.hash));
+  var savedName = '';
+  try { savedName = sessionStorage.getItem('digitalDairyCustomerName') || ''; } catch (e) {}
+  if (savedName) activateCustomer(savedName);
+  else {
+    document.getElementById('login-screen').hidden = false;
+    document.getElementById('site-app').hidden = true;
+  }
 })();
