@@ -9,6 +9,17 @@
 :root[data-mode="manager"] #profile-learning,
 :root[data-mode="manager"] .hero-copy { display: none !important; }
 :root[data-mode="manager"] .hero { display: none; }
+:root[data-mode="manager"] #order-form,
+:root[data-mode="manager"] .customer-only,
+:root:not([data-mode="manager"]) .manager-only,
+.manager-price-control { display: none !important; }
+:root[data-mode="manager"] .manager-price-control { display: grid !important; width: 100%; gap: 5px; margin-top: 10px; color: var(--muted); font-size: .85rem; font-weight: 700; }
+:root[data-mode="manager"] .manager-price-control input { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font: inherit; }
+:root[data-mode="manager"] .shop-add,
+:root[data-mode="manager"] .shop-stepper { display: none !important; }
+:root[data-mode="manager"] .manager-panel { margin-bottom: 24px; }
+:root[data-mode="manager"] .shop-products { margin-top: 20px; }
+:root[data-mode="manager"] .manager-only { display: block !important; }
 
 /* Layout: one site, two views. Home = hero + "at a glance" ledger + animal cards + what each profile covers.
    Breeds = three accordion rows (Cow, Buffalo, Goat); each opens a grid of breed cards. */

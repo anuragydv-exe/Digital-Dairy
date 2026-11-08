@@ -114,8 +114,8 @@
     document.getElementById('manager-login-screen').hidden = true;
     document.getElementById('site-app').hidden = false;
     document.getElementById('manager-panel').hidden = false;
-    if (document.getElementById('manager-panel').parentElement !== viewBreeds) {
-      viewBreeds.insertBefore(document.getElementById('manager-panel'), document.getElementById('cats'));
+    if (document.getElementById('manager-panel').parentElement !== viewHome) {
+      viewHome.insertBefore(document.getElementById('manager-panel'), document.getElementById('order-panel'));
     }
     document.getElementById('customer-greeting').textContent = 'Hello, Manager';
     apply(parse(location.hash));
@@ -548,6 +548,7 @@
     return { page: 'home', cat: null };
   }
   function apply(state) {
+    if (managerMode) state = { page: 'home', cat: null };
     var changed = current !== state.page;
     viewHome.hidden = state.page !== 'home';
     viewBreeds.hidden = state.page !== 'breeds';
