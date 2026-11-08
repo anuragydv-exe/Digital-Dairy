@@ -61,7 +61,7 @@ async function customerSheetRequest(payload) {
 app.get('/api/inventory', async (req, res) => {
   try {
     const result = await customerSheetRequest({ action: 'getInventory' });
-    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
+    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, paneerKg: result.paneerKg, gheeKg: result.gheeKg, curdKg: result.curdKg, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
   } catch (error) {
     console.error('Inventory request failed:', error.message);
     return res.status(error.message === 'NOT_CONFIGURED' ? 503 : 502).json({ error: 'Could not load milk availability right now.' });
@@ -95,19 +95,22 @@ app.post('/api/manager/logout', (req, res) => {
 
 app.post('/api/manager/inventory', async (req, res) => {
   if (!managerSession(req)) return res.status(401).json({ error: 'Please log in as manager first.' });
-  const { milkLitres, milkCapacity, cows, buffaloes, goats } = req.body ?? {};
+  const { milkLitres, milkCapacity, paneerKg, gheeKg, curdKg, cows, buffaloes, goats } = req.body ?? {};
   if (!Number.isFinite(milkLitres) || milkLitres < 0 || milkLitres > 10000000) {
     return res.status(400).json({ error: 'Enter a valid available-milk amount.' });
   }
   if (!Number.isFinite(milkCapacity) || milkCapacity <= 0 || milkCapacity > 10000000 || milkLitres > milkCapacity) {
     return res.status(400).json({ error: 'Milk available cannot be more than tank capacity.' });
   }
+  if (![paneerKg, gheeKg, curdKg].every(function (value) { return Number.isFinite(value) && value >= 0 && value <= 10000000; })) {
+    return res.status(400).json({ error: 'Enter valid paneer, ghee, and curd quantities.' });
+  }
   if (![cows, buffaloes, goats].every(function (value) { return Number.isInteger(value) && value >= 0 && value <= 1000000; })) {
     return res.status(400).json({ error: 'Enter valid animal counts.' });
   }
   try {
-    const result = await customerSheetRequest({ action: 'updateInventory', milkLitres, milkCapacity, cows, buffaloes, goats });
-    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
+    const result = await customerSheetRequest({ action: 'updateInventory', milkLitres, milkCapacity, paneerKg, gheeKg, curdKg, cows, buffaloes, goats });
+    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, paneerKg: result.paneerKg, gheeKg: result.gheeKg, curdKg: result.curdKg, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
   } catch (error) {
     console.error('Inventory update failed:', error.message);
     return res.status(502).json({ error: 'Could not save the milk availability right now.' });

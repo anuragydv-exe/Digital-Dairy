@@ -185,17 +185,30 @@
   function setInventory(data) {
     var milk = Number(data.milkLitres) || 0;
     var capacity = Number(data.milkCapacity) || Math.max(milk, 1000);
+    var paneer = Number(data.paneerKg) || 0;
+    var ghee = Number(data.gheeKg) || 0;
+    var curd = Number(data.curdKg) || 0;
     var cows = Number(data.cows) || 0;
     var buffaloes = Number(data.buffaloes) || 0;
     var goats = Number(data.goats) || 0;
     var animals = cows + buffaloes + goats;
     document.getElementById('available-milk').textContent = milk.toLocaleString();
+    document.getElementById('available-paneer').textContent = paneer.toLocaleString();
+    document.getElementById('available-ghee').textContent = ghee.toLocaleString();
+    document.getElementById('available-curd').textContent = curd.toLocaleString();
+    document.getElementById('order-stock-milk').textContent = milk > 0 ? milk.toLocaleString() + ' L available' : 'Currently unavailable';
+    document.getElementById('order-stock-paneer').textContent = paneer > 0 ? paneer.toLocaleString() + ' kg available' : 'Currently unavailable';
+    document.getElementById('order-stock-ghee').textContent = ghee > 0 ? ghee.toLocaleString() + ' kg available' : 'Currently unavailable';
+    document.getElementById('order-stock-curd').textContent = curd > 0 ? curd.toLocaleString() + ' kg available' : 'Currently unavailable';
     document.getElementById('animal-count').textContent = animals.toLocaleString();
     document.getElementById('cow-count').textContent = cows.toLocaleString();
     document.getElementById('buffalo-count').textContent = buffaloes.toLocaleString();
     document.getElementById('goat-count').textContent = goats.toLocaleString();
     document.getElementById('milk-level').style.setProperty('--milk-fill', Math.min(100, (milk / capacity) * 100) + '%');
     document.getElementById('manager-milk').value = milk;
+    document.getElementById('manager-paneer').value = paneer;
+    document.getElementById('manager-ghee').value = ghee;
+    document.getElementById('manager-curd').value = curd;
     document.getElementById('manager-capacity').value = capacity;
     document.getElementById('manager-cows').value = cows;
     document.getElementById('manager-buffaloes').value = buffaloes;
@@ -212,6 +225,13 @@
       status.textContent = 'Updated by the dairy manager.';
     } catch (error) {
       document.getElementById('available-milk').textContent = '—';
+      document.getElementById('available-paneer').textContent = '—';
+      document.getElementById('available-ghee').textContent = '—';
+      document.getElementById('available-curd').textContent = '—';
+      document.getElementById('order-stock-milk').textContent = 'Availability unavailable';
+      document.getElementById('order-stock-paneer').textContent = 'Availability unavailable';
+      document.getElementById('order-stock-ghee').textContent = 'Availability unavailable';
+      document.getElementById('order-stock-curd').textContent = 'Availability unavailable';
       document.getElementById('animal-count').textContent = '—';
       document.getElementById('cow-count').textContent = '—';
       document.getElementById('buffalo-count').textContent = '—';
@@ -234,6 +254,9 @@
         body: JSON.stringify({
           milkLitres: Number(form.elements.milkLitres.value),
           milkCapacity: Number(form.elements.milkCapacity.value),
+          paneerKg: Number(form.elements.paneerKg.value),
+          gheeKg: Number(form.elements.gheeKg.value),
+          curdKg: Number(form.elements.curdKg.value),
           cows: Number(form.elements.cows.value),
           buffaloes: Number(form.elements.buffaloes.value),
           goats: Number(form.elements.goats.value)
@@ -250,6 +273,22 @@
     } finally {
       button.disabled = false;
     }
+  });
+
+  document.querySelectorAll('.shop-product').forEach(function (card) {
+    card.addEventListener('click', function () {
+      document.querySelectorAll('.shop-product').forEach(function (item) {
+        var selected = item === card;
+        item.classList.toggle('selected', selected);
+        item.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        item.querySelector('.shop-add').textContent = selected ? 'Selected' : 'Add';
+      });
+      var product = card.getAttribute('data-product');
+      document.getElementById('order-product').value = product;
+      document.getElementById('order-unit').textContent = product === 'Milk' ? '(litres)' : '(kg)';
+      document.getElementById('order-quantity').step = product === 'Milk' ? '0.1' : '0.1';
+      document.getElementById('order-status').textContent = '';
+    });
   });
 
   document.getElementById('order-form').addEventListener('submit', async function (event) {

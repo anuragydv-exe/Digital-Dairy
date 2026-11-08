@@ -18,7 +18,7 @@ The check-in does not verify that a phone number belongs to the person entering 
    - `MANAGER_PASSWORD`: a separate strong password for the manager login.
 6. Save the environment changes and redeploy the service.
 
-The Apps Script endpoint only accepts a request with the shared secret. The secret and spreadsheet contents stay on the server; they are not sent to the browser or stored in this repository. Every sign-in creates a new row with the sign-in time, name and phone number. Managers can update the public milk availability and animal count with `MANAGER_PASSWORD`; these values are stored in an `Inventory` tab in the same private Google Sheet.
+The Apps Script endpoint only accepts a request with the shared secret. The secret and spreadsheet contents stay on the server; they are not sent to the browser or stored in this repository. Every sign-in creates a new row with the sign-in time, name and phone number. Managers can update milk, paneer, ghee, curd, and animal availability with `MANAGER_PASSWORD`; these values are stored in an `Inventory` tab in the same private Google Sheet. When updating an existing deployment, paste the latest `google-sheets-apps-script.gs` into Apps Script, save, then choose **Deploy → Manage deployments → Edit → New version → Deploy** so the new product quantities are available to the website.
 
 To get an Excel copy, open the private Google Sheet and choose **File → Download → Microsoft Excel (.xlsx)**.
 

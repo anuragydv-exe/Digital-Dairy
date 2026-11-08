@@ -86,9 +86,18 @@
           <p class="foot-note" id="availability-status" aria-live="polite"></p>
         </div>
         <div class="availability-showcase">
-          <article class="milk-tank" aria-label="Milk tank availability">
+          <article class="milk-tank stock-card" aria-label="Milk availability">
             <div class="tank-shell"><div class="milk-level" id="milk-level"><span>Fresh milk</span></div></div>
-            <div><span class="stock-label">Milk available</span><strong id="available-milk">Loading…</strong><small>litres in the tank</small></div>
+            <div><span class="stock-label">Fresh milk</span><strong id="available-milk">Loading…</strong><small>litres available</small></div>
+          </article>
+          <article class="product-stock-card" aria-label="Paneer availability">
+            <span class="stock-emoji" aria-hidden="true">🧀</span><span class="stock-label">Paneer</span><strong><span id="available-paneer">Loading…</span> <small>kg</small></strong><small>available today</small>
+          </article>
+          <article class="product-stock-card" aria-label="Ghee availability">
+            <span class="stock-emoji" aria-hidden="true">🫙</span><span class="stock-label">Ghee</span><strong><span id="available-ghee">Loading…</span> <small>kg</small></strong><small>available today</small>
+          </article>
+          <article class="product-stock-card" aria-label="Curd availability">
+            <span class="stock-emoji" aria-hidden="true">🥣</span><span class="stock-label">Curd</span><strong><span id="available-curd">Loading…</span> <small>kg</small></strong><small>available today</small>
           </article>
           <article class="animal-stock">
             <span class="stock-label">Animals on the farm</span>
@@ -108,19 +117,24 @@
       </div>
 
       <section class="block order-panel" id="order-panel" aria-labelledby="order-title">
-        <p class="eyebrow">Customer orders</p>
-        <h2 class="sec" id="order-title">Order milk &amp; dairy products</h2>
-        <p class="lead">Send your order request directly to the dairy manager.</p>
+        <div class="shop-heading"><div><p class="eyebrow">Farm fresh, delivered</p><h2 class="sec" id="order-title">Order milk &amp; dairy products</h2><p class="lead">Choose your favourites and send an order request to the dairy manager.</p></div><span class="delivery-badge">🥛 Fresh from our farm</span></div>
         <form id="order-form" class="order-form">
-          <label for="order-name">Your name</label>
-          <input id="order-name" name="name" type="text" maxlength="80" required>
-          <label for="order-phone">Phone number</label>
-          <input id="order-phone" name="phone" type="tel" inputmode="tel" maxlength="20" required>
-          <label for="order-product">Product</label>
-          <select id="order-product" name="product"><option>Milk</option><option>Paneer</option><option>Ghee</option><option>Curd</option></select>
-          <label for="order-quantity">Quantity</label>
-          <input id="order-quantity" name="quantity" type="number" min="0.1" step="0.1" required>
-          <button class="btn" type="submit">Place order request</button>
+          <div class="shop-products" role="group" aria-label="Choose a dairy product">
+            <button class="shop-product selected" type="button" data-product="Milk" aria-pressed="true"><span class="shop-product-icon">🥛</span><span class="shop-product-name">Fresh Milk</span><span class="shop-product-unit">Per litre</span><span class="shop-product-stock" id="order-stock-milk">Loading availability</span><span class="shop-add">Selected</span></button>
+            <button class="shop-product" type="button" data-product="Paneer" aria-pressed="false"><span class="shop-product-icon">🧀</span><span class="shop-product-name">Paneer</span><span class="shop-product-unit">Per kg</span><span class="shop-product-stock" id="order-stock-paneer">Loading availability</span><span class="shop-add">Add</span></button>
+            <button class="shop-product" type="button" data-product="Ghee" aria-pressed="false"><span class="shop-product-icon">🫙</span><span class="shop-product-name">Ghee</span><span class="shop-product-unit">Per kg</span><span class="shop-product-stock" id="order-stock-ghee">Loading availability</span><span class="shop-add">Add</span></button>
+            <button class="shop-product" type="button" data-product="Curd" aria-pressed="false"><span class="shop-product-icon">🥣</span><span class="shop-product-name">Curd</span><span class="shop-product-unit">Per kg</span><span class="shop-product-stock" id="order-stock-curd">Loading availability</span><span class="shop-add">Add</span></button>
+          </div>
+          <input id="order-product" name="product" type="hidden" value="Milk">
+          <div class="order-fields">
+            <label for="order-name">Your name</label>
+            <input id="order-name" name="name" type="text" maxlength="80" required>
+            <label for="order-phone">Phone number</label>
+            <input id="order-phone" name="phone" type="tel" inputmode="tel" maxlength="20" required>
+            <label for="order-quantity">Quantity <span id="order-unit">(litres)</span></label>
+            <input id="order-quantity" name="quantity" type="number" min="0.1" step="0.1" value="1" required>
+          </div>
+          <button class="btn shop-submit" type="submit">Send order request <span aria-hidden="true">→</span></button>
           <p id="order-status" class="login-status" role="status" aria-live="polite"></p>
         </form>
       </section>
@@ -131,6 +145,12 @@
         <form id="inventory-form" class="inventory-form">
           <label for="manager-milk">Milk available (litres)</label>
           <input id="manager-milk" name="milkLitres" type="number" min="0" step="0.1" required>
+          <label for="manager-paneer">Paneer available (kg)</label>
+          <input id="manager-paneer" name="paneerKg" type="number" min="0" step="0.1" required>
+          <label for="manager-ghee">Ghee available (kg)</label>
+          <input id="manager-ghee" name="gheeKg" type="number" min="0" step="0.1" required>
+          <label for="manager-curd">Curd available (kg)</label>
+          <input id="manager-curd" name="curdKg" type="number" min="0" step="0.1" required>
           <label for="manager-capacity">Milk tank capacity (litres)</label>
           <input id="manager-capacity" name="milkCapacity" type="number" min="1" step="0.1" required>
           <label for="manager-cows">Number of cows</label>
@@ -154,6 +174,7 @@
           <div><dt>Care guide</dt><dd>Food, feeding routine, weather comfort, milk production and common health concerns.</dd></div>
         </dl>
       </div>
+
     </section>
 
     <!-- PAGE 2: TYPES OF BREEDS -->
