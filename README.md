@@ -15,9 +15,10 @@ The check-in does not verify that a phone number belongs to the person entering 
 5. In Render, open the Digital Dairy service → **Environment** and add:
    - `GOOGLE_SHEETS_WEB_APP_URL`: the web app URL from step 4.
    - `GOOGLE_SHEETS_SHARED_SECRET`: the same secret from step 3.
+   - `MANAGER_PASSWORD`: a separate strong password for the manager login.
 6. Save the environment changes and redeploy the service.
 
-The Apps Script endpoint only accepts a request with the shared secret. The secret and spreadsheet contents stay on the server; they are not sent to the browser or stored in this repository. Sign-in records use columns for first sign-in, name, phone, and last sign-in. Re-entering the same phone number updates its existing row.
+The Apps Script endpoint only accepts a request with the shared secret. The secret and spreadsheet contents stay on the server; they are not sent to the browser or stored in this repository. Every sign-in creates a new row with the sign-in time, name and phone number. Managers can update the public milk availability and animal count with `MANAGER_PASSWORD`; these values are stored in an `Inventory` tab in the same private Google Sheet.
 
 To get an Excel copy, open the private Google Sheet and choose **File → Download → Microsoft Excel (.xlsx)**.
 

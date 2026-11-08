@@ -25,9 +25,25 @@
       <p class="login-privacy">No password or ID is required. Your phone number is saved as entered and is not verified.</p>
       <button class="btn" id="login-submit" type="submit">Continue</button>
       <p id="login-status" class="login-status" role="status" aria-live="polite"></p>
+       <button class="text-button" id="open-manager-login" type="button">Manager login</button>
     </form>
   </div>
 </section>
+
+ <section class="login-screen" id="manager-login-screen" aria-labelledby="manager-login-title" hidden>
+   <div class="login-card">
+     <p class="eyebrow">Manager access</p>
+     <h1 id="manager-login-title">Manager login</h1>
+     <p class="lead login-lead">Update today’s available milk and number of animals.</p>
+     <form id="manager-login-form">
+       <label for="manager-password">Manager password</label>
+       <input id="manager-password" name="password" type="password" autocomplete="current-password" required>
+       <button class="btn" id="manager-login-submit" type="submit">Log in</button>
+       <p id="manager-login-status" class="login-status" role="status" aria-live="polite"></p>
+       <button class="text-button" id="back-to-customer-login" type="button">Back to customer login</button>
+     </form>
+   </div>
+ </section>
 
 <div class="wrap" id="site-app" hidden>
   <header class="bar">
@@ -46,11 +62,11 @@
     <!-- PAGE 1: HOME -->
     <section id="view-home" aria-labelledby="home-title">
       <div class="hero">
-        <div>
+        <div class="hero-copy">
           <p class="eyebrow">Dairy breed reference</p>
           <h1 id="home-title" tabindex="-1">Welcome to <span class="mark">Digital Dairy</span></h1>
           <p class="lead">Digital Dairy is a detailed reference for dairy animal breeds. Each profile explains where a breed comes from, how much milk it gives, how rich that milk is and what the animal is like to keep.</p>
-          <a class="btn" href="#breeds" data-go="breeds">Explore breeds <span aria-hidden="true">→</span></a>
+          <a class="btn" id="explore-breeds" href="#breeds" data-go="breeds">Explore breeds <span aria-hidden="true">→</span></a>
         </div>
         <aside class="ledger" aria-labelledby="glance-title">
           <h2 id="glance-title">At a glance</h2>
@@ -64,12 +80,71 @@
         </aside>
       </div>
 
-      <div class="block">
+      <section class="block availability" aria-labelledby="availability-title">
+        <div class="availability-heading">
+          <div><p class="eyebrow">Fresh from the farm</p><h2 class="sec" id="availability-title">Today’s dairy availability</h2></div>
+          <p class="foot-note" id="availability-status" aria-live="polite"></p>
+        </div>
+        <div class="availability-showcase">
+          <article class="milk-tank" aria-label="Milk tank availability">
+            <div class="tank-shell"><div class="milk-level" id="milk-level"><span>Fresh milk</span></div></div>
+            <div><span class="stock-label">Milk available</span><strong id="available-milk">Loading…</strong><small>litres in the tank</small></div>
+          </article>
+          <article class="animal-stock">
+            <span class="stock-label">Animals on the farm</span>
+            <strong id="animal-count">Loading…</strong>
+            <div class="animal-breakdown" aria-label="Animal breakdown">
+              <span>🐄 <b id="cow-count">—</b> Cows</span>
+              <span>🐃 <b id="buffalo-count">—</b> Buffaloes</span>
+              <span>🐐 <b id="goat-count">—</b> Goats</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <div class="block" id="animal-selector">
         <h2 class="sec">Choose an animal</h2>
         <div class="species" id="species-cards"></div>
       </div>
 
-      <div class="block">
+      <section class="block order-panel" id="order-panel" aria-labelledby="order-title">
+        <p class="eyebrow">Customer orders</p>
+        <h2 class="sec" id="order-title">Order milk &amp; dairy products</h2>
+        <p class="lead">Send your order request directly to the dairy manager.</p>
+        <form id="order-form" class="order-form">
+          <label for="order-name">Your name</label>
+          <input id="order-name" name="name" type="text" maxlength="80" required>
+          <label for="order-phone">Phone number</label>
+          <input id="order-phone" name="phone" type="tel" inputmode="tel" maxlength="20" required>
+          <label for="order-product">Product</label>
+          <select id="order-product" name="product"><option>Milk</option><option>Paneer</option><option>Ghee</option><option>Curd</option></select>
+          <label for="order-quantity">Quantity</label>
+          <input id="order-quantity" name="quantity" type="number" min="0.1" step="0.1" required>
+          <button class="btn" type="submit">Place order request</button>
+          <p id="order-status" class="login-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="block manager-panel" id="manager-panel" hidden aria-labelledby="manager-panel-title">
+        <p class="eyebrow">Manager controls</p>
+        <h2 class="sec" id="manager-panel-title">Update dairy availability</h2>
+        <form id="inventory-form" class="inventory-form">
+          <label for="manager-milk">Milk available (litres)</label>
+          <input id="manager-milk" name="milkLitres" type="number" min="0" step="0.1" required>
+          <label for="manager-capacity">Milk tank capacity (litres)</label>
+          <input id="manager-capacity" name="milkCapacity" type="number" min="1" step="0.1" required>
+          <label for="manager-cows">Number of cows</label>
+          <input id="manager-cows" name="cows" type="number" min="0" step="1" required>
+          <label for="manager-buffaloes">Number of buffaloes</label>
+          <input id="manager-buffaloes" name="buffaloes" type="number" min="0" step="1" required>
+          <label for="manager-goats">Number of goats</label>
+          <input id="manager-goats" name="goats" type="number" min="0" step="1" required>
+          <button class="btn" type="submit">Save availability</button>
+          <p id="inventory-status" class="login-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <div class="block" id="profile-learning">
         <h2 class="sec">What you can learn about each animal</h2>
         <dl class="covers">
           <div><dt>Origin</dt><dd>The region where the breed developed and where it is kept today.</dd></div>

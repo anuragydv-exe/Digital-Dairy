@@ -10,3 +10,5 @@ services:
         sync: false
       - key: GOOGLE_SHEETS_SHARED_SECRET
         sync: false
+      - key: MANAGER_PASSWORD
+        sync: false

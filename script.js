@@ -45,13 +45,48 @@
     }
   };
   var KEYS = ['cow', 'buffalo', 'goat'];
+  var managerMode = false;
 
   function activateCustomer(name) {
+    managerMode = false;
+    delete document.documentElement.dataset.mode;
     try { sessionStorage.setItem('digitalDairyCustomerName', name); } catch (e) {}
     document.getElementById('login-screen').hidden = true;
+    document.getElementById('manager-login-screen').hidden = true;
     document.getElementById('site-app').hidden = false;
+    document.getElementById('manager-panel').hidden = true;
     document.getElementById('customer-greeting').textContent = 'Hello, ' + name;
+    document.getElementById('order-name').value = name;
     apply(parse(location.hash));
+    window.scrollTo(0, 0);
+  }
+
+  function activateManager() {
+    managerMode = true;
+    document.documentElement.dataset.mode = 'manager';
+    try { sessionStorage.removeItem('digitalDairyCustomerName'); } catch (e) {}
+    document.getElementById('login-screen').hidden = true;
+    document.getElementById('manager-login-screen').hidden = true;
+    document.getElementById('site-app').hidden = false;
+    document.getElementById('manager-panel').hidden = false;
+    if (document.getElementById('manager-panel').parentElement !== viewBreeds) {
+      viewBreeds.insertBefore(document.getElementById('manager-panel'), document.getElementById('cats'));
+    }
+    document.getElementById('customer-greeting').textContent = 'Hello, Manager';
+    apply(parse(location.hash));
+    window.scrollTo(0, 0);
+  }
+
+  function showManagerLogin() {
+    document.getElementById('login-screen').hidden = true;
+    document.getElementById('manager-login-screen').hidden = false;
+    document.getElementById('manager-password').focus();
+  }
+
+  function showCustomerLogin() {
+    document.getElementById('manager-login-screen').hidden = true;
+    document.getElementById('login-screen').hidden = false;
+    document.getElementById('customer-name').focus();
   }
 
   document.getElementById('login-form').addEventListener('submit', async function (event) {
@@ -93,13 +128,48 @@
     }
   });
 
-  document.getElementById('sign-out').addEventListener('click', function () {
+  document.getElementById('open-manager-login').addEventListener('click', showManagerLogin);
+  document.getElementById('back-to-customer-login').addEventListener('click', showCustomerLogin);
+
+  document.getElementById('manager-login-form').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    var form = event.currentTarget;
+    var status = document.getElementById('manager-login-status');
+    var button = document.getElementById('manager-login-submit');
+    button.disabled = true;
+    status.className = 'login-status';
+    status.textContent = 'Logging in…';
+    try {
+      var response = await fetch('/api/manager/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: form.elements.password.value })
+      });
+      var payload = await response.json().catch(function () { return {}; });
+      if (!response.ok) throw new Error(payload.error || 'Could not log in.');
+      form.reset();
+      activateManager();
+    } catch (error) {
+      status.className = 'login-status error';
+      status.textContent = error.message || 'Could not log in.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  document.getElementById('sign-out').addEventListener('click', async function () {
+    if (managerMode) {
+      try { await fetch('/api/manager/logout', { method: 'POST' }); } catch (e) {}
+    }
+    managerMode = false;
+    delete document.documentElement.dataset.mode;
     try { sessionStorage.removeItem('digitalDairyCustomerName'); } catch (e) {}
     document.getElementById('customer-greeting').textContent = '';
     document.getElementById('site-app').hidden = true;
+    document.getElementById('manager-panel').hidden = true;
     document.getElementById('login-screen').hidden = false;
     document.getElementById('login-form').reset();
     document.getElementById('login-status').textContent = '';
+    window.scrollTo(0, 0);
     document.getElementById('customer-name').focus();
   });
 
@@ -111,6 +181,106 @@
     return i === 0 ? Math.min.apply(null, vals) : Math.max.apply(null, vals);
   }
   function plural(n) { return n + (n === 1 ? ' breed' : ' breeds'); }
+
+  function setInventory(data) {
+    var milk = Number(data.milkLitres) || 0;
+    var capacity = Number(data.milkCapacity) || Math.max(milk, 1000);
+    var cows = Number(data.cows) || 0;
+    var buffaloes = Number(data.buffaloes) || 0;
+    var goats = Number(data.goats) || 0;
+    var animals = cows + buffaloes + goats;
+    document.getElementById('available-milk').textContent = milk.toLocaleString();
+    document.getElementById('animal-count').textContent = animals.toLocaleString();
+    document.getElementById('cow-count').textContent = cows.toLocaleString();
+    document.getElementById('buffalo-count').textContent = buffaloes.toLocaleString();
+    document.getElementById('goat-count').textContent = goats.toLocaleString();
+    document.getElementById('milk-level').style.setProperty('--milk-fill', Math.min(100, (milk / capacity) * 100) + '%');
+    document.getElementById('manager-milk').value = milk;
+    document.getElementById('manager-capacity').value = capacity;
+    document.getElementById('manager-cows').value = cows;
+    document.getElementById('manager-buffaloes').value = buffaloes;
+    document.getElementById('manager-goats').value = goats;
+  }
+
+  async function loadInventory() {
+    var status = document.getElementById('availability-status');
+    try {
+      var response = await fetch('/api/inventory');
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok) throw new Error(data.error || 'Could not load availability.');
+      setInventory(data);
+      status.textContent = 'Updated by the dairy manager.';
+    } catch (error) {
+      document.getElementById('available-milk').textContent = '—';
+      document.getElementById('animal-count').textContent = '—';
+      document.getElementById('cow-count').textContent = '—';
+      document.getElementById('buffalo-count').textContent = '—';
+      document.getElementById('goat-count').textContent = '—';
+      status.textContent = 'Availability is not available right now.';
+    }
+  }
+
+  document.getElementById('inventory-form').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    var form = event.currentTarget;
+    var status = document.getElementById('inventory-status');
+    var button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+    status.className = 'login-status';
+    status.textContent = 'Saving…';
+    try {
+      var response = await fetch('/api/manager/inventory', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          milkLitres: Number(form.elements.milkLitres.value),
+          milkCapacity: Number(form.elements.milkCapacity.value),
+          cows: Number(form.elements.cows.value),
+          buffaloes: Number(form.elements.buffaloes.value),
+          goats: Number(form.elements.goats.value)
+        })
+      });
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok) throw new Error(data.error || 'Could not save availability.');
+      setInventory(data);
+      document.getElementById('availability-status').textContent = 'Updated by the dairy manager.';
+      status.textContent = 'Availability saved.';
+    } catch (error) {
+      status.className = 'login-status error';
+      status.textContent = error.message || 'Could not save availability.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  document.getElementById('order-form').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    var form = event.currentTarget;
+    var status = document.getElementById('order-status');
+    var button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+    status.className = 'login-status';
+    status.textContent = 'Placing your order…';
+    try {
+      var response = await fetch('/api/orders', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.elements.name.value.trim(),
+          phone: form.elements.phone.value.trim(),
+          product: form.elements.product.value,
+          quantity: Number(form.elements.quantity.value)
+        })
+      });
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok) throw new Error(data.error || 'Could not place your order.');
+      form.elements.quantity.value = '';
+      status.textContent = 'Order request sent to the dairy manager.';
+    } catch (error) {
+      status.className = 'login-status error';
+      status.textContent = error.message || 'Could not place your order.';
+    } finally {
+      button.disabled = false;
+    }
+  });
 
   /* Home: ledger */
   var total = 0, rows = '';
@@ -282,11 +452,23 @@
   window.addEventListener('hashchange', function () {
     if (apply(parse(location.hash))) window.scrollTo(0, 0);
   });
-  var savedName = '';
-  try { savedName = sessionStorage.getItem('digitalDairyCustomerName') || ''; } catch (e) {}
-  if (savedName) activateCustomer(savedName);
-  else {
-    document.getElementById('login-screen').hidden = false;
-    document.getElementById('site-app').hidden = true;
+  async function initialiseAccess() {
+    try {
+      var response = await fetch('/api/manager/session');
+      var data = await response.json();
+      if (response.ok && data.manager) {
+        activateManager();
+        return;
+      }
+    } catch (e) {}
+    var savedName = '';
+    try { savedName = sessionStorage.getItem('digitalDairyCustomerName') || ''; } catch (e) {}
+    if (savedName) activateCustomer(savedName);
+    else {
+      document.getElementById('login-screen').hidden = false;
+      document.getElementById('site-app').hidden = true;
+    }
   }
+  loadInventory();
+  initialiseAccess();
 })();
