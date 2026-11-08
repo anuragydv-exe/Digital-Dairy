@@ -180,7 +180,7 @@
     window.scrollTo(0, 0);
   }
 
-  function activateManager() {
+  async function activateManager() {
     managerMode = true;
     document.documentElement.dataset.mode = 'manager';
     try {
@@ -195,6 +195,7 @@
       viewHome.insertBefore(document.getElementById('manager-panel'), document.getElementById('order-panel'));
     }
     document.getElementById('customer-greeting').textContent = 'Hello, Manager';
+    await loadInventory();
     apply(parse(location.hash));
     window.scrollTo(0, 0);
   }
@@ -370,6 +371,10 @@
       if (!response.ok) throw new Error(data.error || 'Could not load availability.');
       setInventory(data);
       status.textContent = 'Updated by the dairy manager.';
+      if (managerMode) {
+        document.getElementById('inventory-status').textContent = 'Saved availability loaded.';
+        document.getElementById('prices-status').textContent = 'Saved prices loaded.';
+      }
     } catch (error) {
       document.getElementById('available-milk').textContent = '—';
       document.getElementById('available-paneer').textContent = '—';
@@ -384,6 +389,12 @@
       document.getElementById('buffalo-count').textContent = '—';
       document.getElementById('goat-count').textContent = '—';
       status.textContent = 'Availability is not available right now.';
+      if (managerMode) {
+        document.getElementById('inventory-status').className = 'login-status error';
+        document.getElementById('inventory-status').textContent = 'Could not load saved availability. Check the Google Sheets connection.';
+        document.getElementById('prices-status').className = 'login-status error';
+        document.getElementById('prices-status').textContent = 'Could not load saved prices. Check the Google Sheets connection.';
+      }
     }
   }
 
