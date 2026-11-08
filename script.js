@@ -46,6 +46,51 @@
   };
   var KEYS = ['cow', 'buffalo', 'goat'];
   var managerMode = false;
+  var productNames = ['Milk', 'Paneer', 'Ghee', 'Curd'];
+  var cart = { Milk: 0, Paneer: 0, Ghee: 0, Curd: 0 };
+  var inventoryProducts = {};
+
+  function rupees(value) {
+    return '₹' + Number(value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function renderCart() {
+    var items = document.getElementById('cart-items');
+    items.textContent = '';
+    var count = 0, total = 0;
+    productNames.forEach(function (name) {
+      var quantity = cart[name] || 0;
+      var stock = Number(inventoryProducts[name].stock || 0);
+      var rate = Number(inventoryProducts[name].rate || 0);
+      document.getElementById('cart-qty-' + name.toLowerCase()).textContent = quantity ? String(quantity) : '0';
+      document.getElementById('stepper-' + name.toLowerCase()).hidden = !quantity;
+      var addButton = document.querySelector('[data-cart-add="' + name + '"]');
+      addButton.hidden = !!quantity;
+      addButton.disabled = stock <= 0 || rate <= 0;
+      addButton.textContent = stock <= 0 ? 'Sold out' : rate <= 0 ? 'Set price' : 'Add';
+      document.querySelector('[data-shop-product="' + name + '"]').classList.toggle('in-cart', !!quantity);
+      if (!quantity) return;
+      count += quantity;
+      var lineTotal = quantity * rate;
+      total += lineTotal;
+      var row = document.createElement('div');
+      row.className = 'cart-row';
+      var detail = document.createElement('span');
+      detail.textContent = name + ' × ' + quantity + (name === 'Milk' ? ' L' : ' kg');
+      var amount = document.createElement('strong');
+      amount.textContent = rupees(lineTotal);
+      row.append(detail, amount);
+      items.appendChild(row);
+    });
+    if (!count) {
+      var empty = document.createElement('p');
+      empty.className = 'cart-empty';
+      empty.textContent = 'Your basket is empty. Add a product above.';
+      items.appendChild(empty);
+    }
+    document.getElementById('order-total').textContent = rupees(total);
+    document.querySelector('.shop-submit').disabled = !count || productNames.some(function (name) { return cart[name] > Number(inventoryProducts[name].stock || 0) || (cart[name] > 0 && Number(inventoryProducts[name].rate || 0) <= 0); });
+  }
 
   function activateCustomer(name) {
     managerMode = false;
@@ -188,6 +233,16 @@
     var paneer = Number(data.paneerKg) || 0;
     var ghee = Number(data.gheeKg) || 0;
     var curd = Number(data.curdKg) || 0;
+    var milkRate = Number(data.milkRate) || 0;
+    var paneerRate = Number(data.paneerRate) || 0;
+    var gheeRate = Number(data.gheeRate) || 0;
+    var curdRate = Number(data.curdRate) || 0;
+    inventoryProducts = {
+      Milk: { stock: milk, rate: milkRate },
+      Paneer: { stock: paneer, rate: paneerRate },
+      Ghee: { stock: ghee, rate: gheeRate },
+      Curd: { stock: curd, rate: curdRate }
+    };
     var cows = Number(data.cows) || 0;
     var buffaloes = Number(data.buffaloes) || 0;
     var goats = Number(data.goats) || 0;
@@ -203,6 +258,10 @@
     document.getElementById('order-stock-paneer').textContent = paneer > 0 ? paneer.toLocaleString() + ' kg available' : 'Currently unavailable';
     document.getElementById('order-stock-ghee').textContent = ghee > 0 ? ghee.toLocaleString() + ' kg available' : 'Currently unavailable';
     document.getElementById('order-stock-curd').textContent = curd > 0 ? curd.toLocaleString() + ' kg available' : 'Currently unavailable';
+    document.getElementById('price-milk').textContent = milkRate > 0 ? rupees(milkRate) + ' / L' : 'Price not set';
+    document.getElementById('price-paneer').textContent = paneerRate > 0 ? rupees(paneerRate) + ' / kg' : 'Price not set';
+    document.getElementById('price-ghee').textContent = gheeRate > 0 ? rupees(gheeRate) + ' / kg' : 'Price not set';
+    document.getElementById('price-curd').textContent = curdRate > 0 ? rupees(curdRate) + ' / kg' : 'Price not set';
     document.getElementById('animal-count').textContent = animals.toLocaleString();
     document.getElementById('cow-count').textContent = cows.toLocaleString();
     document.getElementById('buffalo-count').textContent = buffaloes.toLocaleString();
@@ -212,10 +271,15 @@
     document.getElementById('manager-paneer').value = paneer;
     document.getElementById('manager-ghee').value = ghee;
     document.getElementById('manager-curd').value = curd;
+    document.getElementById('manager-milk-rate').value = milkRate || '';
+    document.getElementById('manager-paneer-rate').value = paneerRate || '';
+    document.getElementById('manager-ghee-rate').value = gheeRate || '';
+    document.getElementById('manager-curd-rate').value = curdRate || '';
     document.getElementById('manager-capacity').value = capacity;
     document.getElementById('manager-cows').value = cows;
     document.getElementById('manager-buffaloes').value = buffaloes;
     document.getElementById('manager-goats').value = goats;
+    renderCart();
   }
 
   async function loadInventory() {
@@ -278,19 +342,49 @@
     }
   });
 
-  document.querySelectorAll('.shop-product').forEach(function (card) {
-    card.addEventListener('click', function () {
-      document.querySelectorAll('.shop-product').forEach(function (item) {
-        var selected = item === card;
-        item.classList.toggle('selected', selected);
-        item.setAttribute('aria-pressed', selected ? 'true' : 'false');
-        item.querySelector('.shop-add').textContent = selected ? 'Selected' : 'Add';
+  document.getElementById('pricing-form').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    var form = event.currentTarget;
+    var status = document.getElementById('prices-status');
+    var button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+    status.className = 'login-status';
+    status.textContent = 'Saving prices…';
+    try {
+      var response = await fetch('/api/manager/prices', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          milkRate: Number(form.elements.milkRate.value),
+          paneerRate: Number(form.elements.paneerRate.value),
+          gheeRate: Number(form.elements.gheeRate.value),
+          curdRate: Number(form.elements.curdRate.value)
+        })
       });
-      var product = card.getAttribute('data-product');
-      document.getElementById('order-product').value = product;
-      document.getElementById('order-unit').textContent = product === 'Milk' ? '(litres)' : '(kg)';
-      document.getElementById('order-quantity').step = product === 'Milk' ? '0.1' : '0.1';
-      document.getElementById('order-status').textContent = '';
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok) throw new Error(data.error || 'Could not save prices.');
+      setInventory(data);
+      status.textContent = 'Prices saved.';
+    } catch (error) {
+      status.className = 'login-status error';
+      status.textContent = error.message || 'Could not save prices.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  document.querySelectorAll('[data-cart-add]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var name = button.getAttribute('data-cart-add');
+      if (cart[name] < Number(inventoryProducts[name].stock || 0)) cart[name] = Math.min(cart[name] + 1, Number(inventoryProducts[name].stock));
+      renderCart();
+    });
+  });
+  document.querySelectorAll('[data-cart-change]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var name = button.getAttribute('data-product');
+      var delta = Number(button.getAttribute('data-cart-change'));
+      cart[name] = Math.max(0, Math.min(Number(inventoryProducts[name].stock || 0), cart[name] + delta));
+      renderCart();
     });
   });
 
@@ -302,25 +396,29 @@
     button.disabled = true;
     status.className = 'login-status';
     status.textContent = 'Placing your order…';
+    var items = productNames.filter(function (name) { return cart[name] > 0; }).map(function (name) { return { product: name, quantity: cart[name] }; });
     try {
       var response = await fetch('/api/orders', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.elements.name.value.trim(),
           phone: form.elements.phone.value.trim(),
-          product: form.elements.product.value,
-          quantity: Number(form.elements.quantity.value)
+          address: form.elements.address.value.trim(),
+          paymentMethod: form.elements.paymentMethod.value,
+          items: items
         })
       });
       var data = await response.json().catch(function () { return {}; });
       if (!response.ok) throw new Error(data.error || 'Could not place your order.');
-      form.elements.quantity.value = '';
-      status.textContent = 'Order request sent to the dairy manager.';
+      cart = { Milk: 0, Paneer: 0, Ghee: 0, Curd: 0 };
+      setInventory(data.inventory);
+      status.textContent = 'Order placed. Total: ' + rupees(data.total) + '. The available stock has been updated.';
     } catch (error) {
+      if (error.message && error.message.indexOf('Some items are no longer available') === 0) await loadInventory();
       status.className = 'login-status error';
       status.textContent = error.message || 'Could not place your order.';
     } finally {
-      button.disabled = false;
+      renderCart();
     }
   });
 

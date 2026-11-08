@@ -61,7 +61,7 @@ async function customerSheetRequest(payload) {
 app.get('/api/inventory', async (req, res) => {
   try {
     const result = await customerSheetRequest({ action: 'getInventory' });
-    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, paneerKg: result.paneerKg, gheeKg: result.gheeKg, curdKg: result.curdKg, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
+    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, paneerKg: result.paneerKg, gheeKg: result.gheeKg, curdKg: result.curdKg, milkRate: result.milkRate, paneerRate: result.paneerRate, gheeRate: result.gheeRate, curdRate: result.curdRate, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
   } catch (error) {
     console.error('Inventory request failed:', error.message);
     return res.status(error.message === 'NOT_CONFIGURED' ? 503 : 502).json({ error: 'Could not load milk availability right now.' });
@@ -110,26 +110,47 @@ app.post('/api/manager/inventory', async (req, res) => {
   }
   try {
     const result = await customerSheetRequest({ action: 'updateInventory', milkLitres, milkCapacity, paneerKg, gheeKg, curdKg, cows, buffaloes, goats });
-    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, paneerKg: result.paneerKg, gheeKg: result.gheeKg, curdKg: result.curdKg, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
+    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, paneerKg: result.paneerKg, gheeKg: result.gheeKg, curdKg: result.curdKg, milkRate: result.milkRate, paneerRate: result.paneerRate, gheeRate: result.gheeRate, curdRate: result.curdRate, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
   } catch (error) {
     console.error('Inventory update failed:', error.message);
     return res.status(502).json({ error: 'Could not save the milk availability right now.' });
   }
 });
 
+app.post('/api/manager/prices', async (req, res) => {
+  if (!managerSession(req)) return res.status(401).json({ error: 'Please log in as manager first.' });
+  const { milkRate, paneerRate, gheeRate, curdRate } = req.body ?? {};
+  if (![milkRate, paneerRate, gheeRate, curdRate].every(function (value) { return Number.isFinite(value) && value > 0 && value <= 10000000; })) {
+    return res.status(400).json({ error: 'Enter a valid positive price for each product.' });
+  }
+  try {
+    const result = await customerSheetRequest({ action: 'updatePrices', milkRate, paneerRate, gheeRate, curdRate });
+    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, paneerKg: result.paneerKg, gheeKg: result.gheeKg, curdKg: result.curdKg, milkRate: result.milkRate, paneerRate: result.paneerRate, gheeRate: result.gheeRate, curdRate: result.curdRate, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
+  } catch (error) {
+    console.error('Price update failed:', error.message);
+    return res.status(502).json({ error: 'Could not save product prices right now.' });
+  }
+});
+
 app.post('/api/orders', async (req, res) => {
-  const { name, phone, product, quantity } = req.body ?? {};
-  if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 80 || typeof phone !== 'string' || phone.length > 20 || !['Milk', 'Paneer', 'Ghee', 'Curd'].includes(product) || !Number.isFinite(quantity) || quantity <= 0 || quantity > 10000) {
+  const { name, phone, address, paymentMethod, items } = req.body ?? {};
+  const validProducts = ['Milk', 'Paneer', 'Ghee', 'Curd'];
+  if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 80 || typeof phone !== 'string' || phone.length > 20 || typeof address !== 'string' || address.trim().length < 8 || address.trim().length > 300 || !['Cash on delivery', 'UPI on delivery'].includes(paymentMethod) || !Array.isArray(items) || items.length < 1 || items.length > 4 || !items.every(function (item) { return item && validProducts.includes(item.product) && Number.isFinite(item.quantity) && item.quantity > 0 && item.quantity <= 10000; }) || new Set(items.map(function (item) { return item.product; })).size !== items.length) {
     return res.status(400).json({ error: 'Enter valid order details.' });
   }
   const digits = phone.replace(/\D/g, '');
   if (digits.length < 10 || digits.length > 15) return res.status(400).json({ error: 'Enter a phone number with 10 to 15 digits.' });
   try {
-    await customerSheetRequest({ action: 'createOrder', name: name.trim(), phone: phone.trim(), product, quantity });
-    return res.json({ ok: true });
+    const result = await customerSheetRequest({ action: 'createOrder', name: name.trim(), phone: phone.trim(), address: address.trim(), paymentMethod, items });
+    return res.json({ ok: true, total: result.total, inventory: result.inventory });
   } catch (error) {
     console.error('Order request failed:', error.message);
-    return res.status(error.message === 'NOT_CONFIGURED' ? 503 : 502).json({ error: 'Could not place your order right now. Please try again later.' });
+    const message = error.message === 'OUT_OF_STOCK'
+      ? 'Some items are no longer available in that quantity. Please adjust your basket and try again.'
+      : error.message === 'PRICE_NOT_SET'
+        ? 'The manager has not set a price for one or more products yet.'
+        : 'Could not place your order right now. Please try again later.';
+    return res.status(error.message === 'NOT_CONFIGURED' ? 503 : error.message === 'OUT_OF_STOCK' ? 409 : error.message === 'PRICE_NOT_SET' ? 400 : 502).json({ error: message });
   }
 });
 
