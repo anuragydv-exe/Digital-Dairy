@@ -64,10 +64,14 @@ function readInventory(sheet) {
 function ordersSheet(spreadsheet) {
   const sheet = spreadsheet.getSheetByName('Orders') || spreadsheet.insertSheet('Orders');
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['Order time (UTC)', 'Customer name', 'Phone', 'Product / items', 'Quantity summary', 'Status', 'Total amount (INR)', 'Delivery address', 'Payment method']);
+    sheet.appendRow(['Order time (UTC)', 'Customer name', 'Phone', 'Product / items', 'Quantity summary', 'Status', 'Total amount (INR)', 'Delivery address', 'Payment method', 'Receipt ID']);
     sheet.setFrozenRows(1);
-  } else if (!sheet.getRange(1, 7).getValue()) {
-    sheet.getRange(1, 7, 1, 3).setValues([['Total amount (INR)', 'Delivery address', 'Payment method']]);
+  } else {
+    const extraHeaders = ['Total amount (INR)', 'Delivery address', 'Payment method', 'Receipt ID'];
+    extraHeaders.forEach(function (header, index) {
+      const column = index + 7;
+      if (!sheet.getRange(1, column).getValue()) sheet.getRange(1, column).setValue(header);
+    });
   }
   return sheet;
 }
@@ -177,10 +181,12 @@ function doPost(e) {
         stockSheet.getRange(product.stockRow, 2).setValue((Number(stockSheet.getRange(product.stockRow, 2).getValue()) || 0) - line.quantity);
       });
       const sheet = ordersSheet(spreadsheet);
+      const receiptId = Utilities.getUuid().replace(/-/g, '').slice(0, 10).toUpperCase();
+      const orderedAt = new Date().toISOString();
       const itemSummary = lines.map(function (line) { return line.product + ' × ' + line.quantity + ' ' + line.unit; }).join(', ');
-      sheet.appendRow([new Date().toISOString(), asPlainText(name), asPlainText(phone), asPlainText(itemSummary), quantitySummary.join(' + '), 'New', total, asPlainText(address), paymentMethod]);
+      sheet.appendRow([orderedAt, asPlainText(name), asPlainText(phone), asPlainText(itemSummary), quantitySummary.join(' + '), 'New', total, asPlainText(address), paymentMethod, receiptId]);
       sheet.getRange(sheet.getLastRow(), 3).setNumberFormat('@');
-      return jsonOutput({ ok: true, total: total, inventory: readInventory(stockSheet) });
+      return jsonOutput({ ok: true, receiptId: receiptId, orderedAt: orderedAt, items: lines, total: total, inventory: readInventory(stockSheet) });
     }
 
     const name = String(body.name || '').trim();

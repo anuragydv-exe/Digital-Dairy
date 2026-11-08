@@ -92,16 +92,90 @@
     document.querySelector('.shop-submit').disabled = !count || productNames.some(function (name) { return cart[name] > Number(inventoryProducts[name].stock || 0) || (cart[name] > 0 && Number(inventoryProducts[name].rate || 0) <= 0); });
   }
 
-  function activateCustomer(name) {
+  function orderStorageKey(phone) {
+    return 'digitalDairyOrders:' + String(phone || '').replace(/\D/g, '');
+  }
+
+  function saveOrderReceipt(receipt, phone) {
+    try {
+      sessionStorage.setItem('digitalDairyCustomerPhone', phone);
+      var key = orderStorageKey(phone);
+      var saved = JSON.parse(localStorage.getItem(key) || '[]');
+      saved.push(receipt);
+      localStorage.setItem(key, JSON.stringify(saved.slice(-30)));
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function renderOrderHistory() {
+    var container = document.getElementById('order-history');
+    container.textContent = '';
+    var phone = '';
+    try { phone = sessionStorage.getItem('digitalDairyCustomerPhone') || ''; } catch (e) {}
+    if (!phone.replace(/\D/g, '')) {
+      container.textContent = 'Sign in with your phone number to view receipts saved on this device.';
+      return;
+    }
+    var receipts = [];
+    try { receipts = JSON.parse(localStorage.getItem(orderStorageKey(phone)) || '[]'); } catch (e) {}
+    if (!receipts.length) {
+      container.textContent = 'No saved orders yet. Your receipts will appear here after you place an order on this device.';
+      return;
+    }
+    receipts.slice().reverse().forEach(function (receipt) {
+      var card = document.createElement('article');
+      card.className = 'receipt-card';
+      var head = document.createElement('div');
+      head.className = 'receipt-head';
+      var title = document.createElement('h2');
+      title.textContent = 'Receipt ' + receipt.receiptId;
+      var date = document.createElement('time');
+      date.textContent = new Date(receipt.createdAt).toLocaleString();
+      head.append(title, date);
+      card.appendChild(head);
+      (receipt.items || []).forEach(function (item) {
+        var line = document.createElement('div');
+        line.className = 'receipt-line';
+        var detail = document.createElement('span');
+        detail.textContent = item.product + ' × ' + item.quantity + ' ' + item.unit + ' at ' + rupees(item.rate) + ' / ' + item.unit;
+        var amount = document.createElement('strong');
+        amount.textContent = rupees(Number(item.quantity) * Number(item.rate));
+        line.append(detail, amount);
+        card.appendChild(line);
+      });
+      var total = document.createElement('div');
+      total.className = 'receipt-total';
+      total.innerHTML = '<span>Total</span><strong></strong>';
+      total.querySelector('strong').textContent = rupees(receipt.total);
+      card.appendChild(total);
+      var address = document.createElement('p');
+      address.textContent = 'Delivery address: ' + receipt.address;
+      var payment = document.createElement('p');
+      payment.textContent = 'Payment: ' + receipt.paymentMethod;
+      card.append(address, payment);
+      var print = document.createElement('button');
+      print.type = 'button';
+      print.className = 'btn print-receipt';
+      print.textContent = 'Print receipt';
+      card.appendChild(print);
+      container.appendChild(card);
+    });
+  }
+
+  function activateCustomer(name, phone) {
     managerMode = false;
     delete document.documentElement.dataset.mode;
-    try { sessionStorage.setItem('digitalDairyCustomerName', name); } catch (e) {}
+    try {
+      sessionStorage.setItem('digitalDairyCustomerName', name);
+      if (phone) sessionStorage.setItem('digitalDairyCustomerPhone', phone);
+    } catch (e) {}
     document.getElementById('login-screen').hidden = true;
     document.getElementById('manager-login-screen').hidden = true;
     document.getElementById('site-app').hidden = false;
     document.getElementById('manager-panel').hidden = true;
     document.getElementById('customer-greeting').textContent = 'Hello, ' + name;
     document.getElementById('order-name').value = name;
+    if (phone) document.getElementById('order-phone').value = phone;
     apply(parse(location.hash));
     window.scrollTo(0, 0);
   }
@@ -109,7 +183,10 @@
   function activateManager() {
     managerMode = true;
     document.documentElement.dataset.mode = 'manager';
-    try { sessionStorage.removeItem('digitalDairyCustomerName'); } catch (e) {}
+    try {
+      sessionStorage.removeItem('digitalDairyCustomerName');
+      sessionStorage.removeItem('digitalDairyCustomerPhone');
+    } catch (e) {}
     document.getElementById('login-screen').hidden = true;
     document.getElementById('manager-login-screen').hidden = true;
     document.getElementById('site-app').hidden = false;
@@ -163,7 +240,7 @@
       }
       if (!response.ok) throw new Error(payload.error || 'Could not save your details. Please try again.');
       if (!payload.name) throw new Error('The customer service returned an unexpected response.');
-      activateCustomer(payload.name);
+      activateCustomer(payload.name, phone);
     } catch (error) {
       status.className = 'login-status error';
       status.textContent = error.message || 'Could not connect. Please try again later.';
@@ -207,7 +284,10 @@
     }
     managerMode = false;
     delete document.documentElement.dataset.mode;
-    try { sessionStorage.removeItem('digitalDairyCustomerName'); } catch (e) {}
+    try {
+      sessionStorage.removeItem('digitalDairyCustomerName');
+      sessionStorage.removeItem('digitalDairyCustomerPhone');
+    } catch (e) {}
     document.getElementById('customer-greeting').textContent = '';
     document.getElementById('site-app').hidden = true;
     document.getElementById('manager-panel').hidden = true;
@@ -410,9 +490,17 @@
       });
       var data = await response.json().catch(function () { return {}; });
       if (!response.ok) throw new Error(data.error || 'Could not place your order.');
+      var receiptSaved = saveOrderReceipt({
+        receiptId: data.receiptId,
+        createdAt: data.orderedAt || new Date().toISOString(),
+        items: data.items,
+        total: data.total,
+        address: form.elements.address.value.trim(),
+        paymentMethod: form.elements.paymentMethod.value
+      }, form.elements.phone.value);
       cart = { Milk: 0, Paneer: 0, Ghee: 0, Curd: 0 };
       setInventory(data.inventory);
-      status.textContent = 'Order placed. Total: ' + rupees(data.total) + '. The available stock has been updated.';
+      status.textContent = 'Order placed. Receipt ' + data.receiptId + ' · Total ' + rupees(data.total) + '. Stock has been updated.' + (receiptSaved ? '' : ' Please save your receipt details; this device could not store it.');
     } catch (error) {
       if (error.message && error.message.indexOf('Some items are no longer available') === 0) await loadInventory();
       status.className = 'login-status error';
@@ -503,34 +591,42 @@
   /* Routing: #home, #breeds, #breeds-cow, #breeds-buffalo, #breeds-goat */
   var viewHome = document.getElementById('view-home');
   var viewBreeds = document.getElementById('view-breeds');
+  var viewOrders = document.getElementById('view-orders');
   var current = null;
 
   function parse(h) {
     h = (h || '').replace(/^#/, '');
+    if (h === 'orders') return { page: 'orders', cat: null };
     if (h === 'breeds') return { page: 'breeds', cat: null };
     if (h.indexOf('breeds-') === 0 && SPECIES[h.slice(7)]) return { page: 'breeds', cat: h.slice(7) };
     return { page: 'home', cat: null };
   }
   function apply(state) {
-    if (managerMode) state = { page: 'home', cat: null };
+    if (managerMode && state.page === 'orders') state = { page: 'home', cat: null };
     var changed = current !== state.page;
     viewHome.hidden = state.page !== 'home';
     viewBreeds.hidden = state.page !== 'breeds';
-    var nh = document.getElementById('nav-home'), nb = document.getElementById('nav-breeds');
-    if (state.page === 'home') { nh.setAttribute('aria-current', 'page'); nb.removeAttribute('aria-current'); }
-    else { nb.setAttribute('aria-current', 'page'); nh.removeAttribute('aria-current'); }
+    viewOrders.hidden = state.page !== 'orders';
+    var nh = document.getElementById('nav-home'), nb = document.getElementById('nav-breeds'), no = document.getElementById('nav-orders');
+    [nh, nb, no].forEach(function (link) { link.removeAttribute('aria-current'); });
+    (state.page === 'home' ? nh : state.page === 'breeds' ? nb : no).setAttribute('aria-current', 'page');
     KEYS.forEach(function (k) {
       var open = state.cat === k;
       document.getElementById('btn-' + k).setAttribute('aria-expanded', open ? 'true' : 'false');
       document.getElementById('panel-' + k).hidden = !open;
     });
     current = state.page;
+    if (state.page === 'orders') renderOrderHistory();
     return changed;
   }
   function setHash(h) { try { if (location.hash !== '#' + h) location.hash = h; } catch (e) {} }
   function reduced() { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
 
   document.addEventListener('click', function (e) {
+    if (e.target.closest('.print-receipt')) {
+      window.print();
+      return;
+    }
     var go = e.target.closest('[data-go]');
     if (go) {
       e.preventDefault();
@@ -539,7 +635,7 @@
       setHash(h);
       if (changed) {
         window.scrollTo(0, 0);
-        var t = document.getElementById(current === 'home' ? 'home-title' : 'breeds-title');
+        var t = document.getElementById(current === 'home' ? 'home-title' : current === 'breeds' ? 'breeds-title' : 'orders-title');
         if (t) t.focus({ preventScroll: true });
       }
       return;
@@ -566,9 +662,12 @@
         return;
       }
     } catch (e) {}
-    var savedName = '';
-    try { savedName = sessionStorage.getItem('digitalDairyCustomerName') || ''; } catch (e) {}
-    if (savedName) activateCustomer(savedName);
+    var savedName = '', savedPhone = '';
+    try {
+      savedName = sessionStorage.getItem('digitalDairyCustomerName') || '';
+      savedPhone = sessionStorage.getItem('digitalDairyCustomerPhone') || '';
+    } catch (e) {}
+    if (savedName) activateCustomer(savedName, savedPhone);
     else {
       document.getElementById('login-screen').hidden = false;
       document.getElementById('site-app').hidden = true;

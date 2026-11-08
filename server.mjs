@@ -142,7 +142,7 @@ app.post('/api/orders', async (req, res) => {
   if (digits.length < 10 || digits.length > 15) return res.status(400).json({ error: 'Enter a phone number with 10 to 15 digits.' });
   try {
     const result = await customerSheetRequest({ action: 'createOrder', name: name.trim(), phone: phone.trim(), address: address.trim(), paymentMethod, items });
-    return res.json({ ok: true, total: result.total, inventory: result.inventory });
+    return res.json({ ok: true, receiptId: result.receiptId, orderedAt: result.orderedAt, items: result.items, total: result.total, inventory: result.inventory });
   } catch (error) {
     console.error('Order request failed:', error.message);
     const message = error.message === 'OUT_OF_STOCK'

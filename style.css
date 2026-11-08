@@ -17,9 +17,11 @@
 :root[data-mode="manager"] .manager-price-control input { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font: inherit; }
 :root[data-mode="manager"] .shop-add,
 :root[data-mode="manager"] .shop-stepper { display: none !important; }
+:root[data-mode="manager"] #nav-orders { display: none !important; }
 :root[data-mode="manager"] .manager-panel { margin-bottom: 24px; }
 :root[data-mode="manager"] .shop-products { margin-top: 20px; }
 :root[data-mode="manager"] .manager-only { display: block !important; }
+.manager-save-prices { display: none !important; }
 :root[data-mode="manager"] .manager-save-prices { display: flex !important; grid-column: 1 / -1; align-items: center; gap: 14px; padding: 8px 0 2px; }
 :root[data-mode="manager"] .manager-save-prices .login-status { margin: 0; }
 
@@ -327,6 +329,17 @@ td:first-child { font: 700 1.05rem var(--font-display); }
 .pricing-panel h3 { margin:0; font:700 1.25rem var(--font-display); }
 .pricing-panel .foot-note { margin:4px 0 0; }
 .shop-submit { min-width:220px; }
+.order-history { display:grid; gap:16px; max-width:780px; margin:24px 0 40px; }
+.receipt-card { padding:20px; border:1px solid var(--line); border-radius:16px; background:var(--surface); }
+.receipt-head, .receipt-line, .receipt-total { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.receipt-head { align-items:center; padding-bottom:12px; border-bottom:1px dashed var(--line); }
+.receipt-head h2 { margin:0; font:700 1.25rem var(--font-display); }
+.receipt-head time { color:var(--muted); font-size:.9rem; text-align:right; }
+.receipt-line { padding:8px 0; border-bottom:1px solid var(--line); }
+.receipt-line strong, .receipt-total strong { white-space:nowrap; }
+.receipt-total { margin-top:12px; padding-top:8px; border-top:1px solid var(--line); font-weight:700; }
+.receipt-card p { margin:9px 0 0; color:var(--muted); }
+.print-receipt { margin-top:14px; }
 .manager-panel { padding:24px; border:1px solid var(--accent); border-radius:14px; background:var(--surface); }
 .manager-panel .eyebrow { margin-bottom:8px; }
 
@@ -343,6 +356,14 @@ td:first-child { font: 700 1.05rem var(--font-display); }
   .shop-heading { align-items:flex-start; flex-direction:column; }
   .order-fields { grid-template-columns:1fr; }
   .milk-tank { align-items:center; }
+}
+
+@media print {
+  body * { visibility:hidden !important; }
+  #view-orders, #view-orders * { visibility:visible !important; }
+  #view-orders { position:absolute; inset:0; width:100%; padding:16px; background:white; color:#111; }
+  #view-orders .intro, #view-orders .print-receipt { display:none !important; }
+  .receipt-card { break-inside:avoid; border-color:#999; background:white; color:#111; }
 }
 
 

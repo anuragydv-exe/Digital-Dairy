@@ -54,6 +54,7 @@
     <nav aria-label="Main">
       <a href="#home" data-go="home" id="nav-home">Home</a>
       <a href="#breeds" data-go="breeds" id="nav-breeds">Breeds</a>
+      <a href="#orders" data-go="orders" id="nav-orders">Orders</a>
     </nav>
     <div class="customer-session"><span id="customer-greeting"></span><button type="button" id="sign-out">Sign out</button></div>
   </header>
@@ -194,6 +195,15 @@
       </div>
       <div class="cats" id="cats"></div>
       <section id="breed-detail" class="breed-detail" hidden aria-live="polite"></section>
+    </section>
+
+    <section id="view-orders" aria-labelledby="orders-title" hidden>
+      <div class="intro">
+        <p class="eyebrow">Your purchases</p>
+        <h1 id="orders-title" tabindex="-1">Your orders</h1>
+        <p class="lead">View order receipts and delivery details saved on this device.</p>
+      </div>
+      <div class="order-history" id="order-history"></div>
     </section>
   </main>
 
