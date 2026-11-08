@@ -115,12 +115,13 @@
       </section>
 
       <section class="block order-panel" id="order-panel" aria-labelledby="order-title">
-        <div class="shop-heading"><div><p class="eyebrow">Farm fresh, delivered</p><h2 class="sec" id="order-title">Order milk &amp; dairy products</h2><p class="lead customer-only">Add products to your basket, choose delivery details, and place your order.</p><p class="lead manager-only">Set a price in each product card, then save your prices above.</p></div><span class="delivery-badge">🥛 Fresh from our farm</span></div>
+        <div class="shop-heading"><div><p class="eyebrow">Farm fresh, delivered</p><h2 class="sec" id="order-title">Order milk &amp; dairy products</h2><p class="lead customer-only">Add products to your basket, choose delivery details, and place your order.</p><p class="lead manager-only">Set a price in each product card, then save prices below.</p></div><span class="delivery-badge">🥛 Fresh from our farm</span></div>
         <div class="shop-products" role="group" aria-label="Choose a dairy product">
           <article class="shop-product" data-shop-product="Milk"><span class="shop-product-icon">🥛</span><span class="shop-product-name">Fresh Milk</span><span class="shop-product-price" id="price-milk">₹— / L</span><span class="shop-product-stock" id="order-stock-milk">Loading availability</span><button class="shop-add" type="button" data-cart-add="Milk" disabled>Add</button><div class="shop-stepper" id="stepper-milk" hidden><button type="button" data-cart-change="-1" data-product="Milk" aria-label="Remove one litre of milk">−</button><output id="cart-qty-milk">0</output><button type="button" data-cart-change="1" data-product="Milk" aria-label="Add one litre of milk">+</button></div><label class="manager-price-control" for="manager-milk-rate">Set price (₹ / L)<input id="manager-milk-rate" name="milkRate" form="pricing-form" type="number" min="0.01" step="0.01" required></label></article>
           <article class="shop-product" data-shop-product="Paneer"><span class="shop-product-icon">🧀</span><span class="shop-product-name">Paneer</span><span class="shop-product-price" id="price-paneer">₹— / kg</span><span class="shop-product-stock" id="order-stock-paneer">Loading availability</span><button class="shop-add" type="button" data-cart-add="Paneer" disabled>Add</button><div class="shop-stepper" id="stepper-paneer" hidden><button type="button" data-cart-change="-1" data-product="Paneer" aria-label="Remove one kg of paneer">−</button><output id="cart-qty-paneer">0</output><button type="button" data-cart-change="1" data-product="Paneer" aria-label="Add one kg of paneer">+</button></div><label class="manager-price-control" for="manager-paneer-rate">Set price (₹ / kg)<input id="manager-paneer-rate" name="paneerRate" form="pricing-form" type="number" min="0.01" step="0.01" required></label></article>
           <article class="shop-product" data-shop-product="Ghee"><span class="shop-product-icon">🫙</span><span class="shop-product-name">Ghee</span><span class="shop-product-price" id="price-ghee">₹— / kg</span><span class="shop-product-stock" id="order-stock-ghee">Loading availability</span><button class="shop-add" type="button" data-cart-add="Ghee" disabled>Add</button><div class="shop-stepper" id="stepper-ghee" hidden><button type="button" data-cart-change="-1" data-product="Ghee" aria-label="Remove one kg of ghee">−</button><output id="cart-qty-ghee">0</output><button type="button" data-cart-change="1" data-product="Ghee" aria-label="Add one kg of ghee">+</button></div><label class="manager-price-control" for="manager-ghee-rate">Set price (₹ / kg)<input id="manager-ghee-rate" name="gheeRate" form="pricing-form" type="number" min="0.01" step="0.01" required></label></article>
           <article class="shop-product" data-shop-product="Curd"><span class="shop-product-icon">🥣</span><span class="shop-product-name">Curd</span><span class="shop-product-price" id="price-curd">₹— / kg</span><span class="shop-product-stock" id="order-stock-curd">Loading availability</span><button class="shop-add" type="button" data-cart-add="Curd" disabled>Add</button><div class="shop-stepper" id="stepper-curd" hidden><button type="button" data-cart-change="-1" data-product="Curd" aria-label="Remove one kg of curd">−</button><output id="cart-qty-curd">0</output><button type="button" data-cart-change="1" data-product="Curd" aria-label="Add one kg of curd">+</button></div><label class="manager-price-control" for="manager-curd-rate">Set price (₹ / kg)<input id="manager-curd-rate" name="curdRate" form="pricing-form" type="number" min="0.01" step="0.01" required></label></article>
+          <div class="manager-save-prices"><button class="btn" type="submit" form="pricing-form">Save prices</button><p id="prices-status" class="login-status" role="status" aria-live="polite"></p></div>
         </div>
         <form id="order-form" class="order-form">
           <section class="cart-summary" aria-labelledby="cart-title"><h3 id="cart-title">Your order</h3><div id="cart-items"><p class="cart-empty">Your basket is empty. Add a product above.</p></div><div class="cart-total"><span>Total amount</span><strong id="order-total">₹0.00</strong></div></section>
@@ -165,10 +166,8 @@
         </form>
         <div class="pricing-panel">
           <h3>Set product prices</h3>
-          <p class="foot-note">Enter the prices in the product cards below, then save them here.</p>
+          <p class="foot-note">Enter prices in the cards and use the save button beside them.</p>
           <form id="pricing-form" class="pricing-form">
-            <button class="btn" type="submit">Save prices</button>
-            <p id="prices-status" class="login-status" role="status" aria-live="polite"></p>
           </form>
         </div>
       </section>
@@ -191,7 +190,7 @@
       <div class="intro">
         <p class="eyebrow">Breed directory</p>
         <h1 id="breeds-title" tabindex="-1">Types of Breeds</h1>
-        <p class="lead">Choose an animal, then select any breed card to open its visual profile, feeding guide, climate needs, milk details and common health risks.</p>
+        <p class="lead">Browse cow, buffalo, and goat breeds. Select a breed to see its origin, type, typical milk yield, and milk fat.</p>
       </div>
       <div class="cats" id="cats"></div>
       <section id="breed-detail" class="breed-detail" hidden aria-live="polite"></section>

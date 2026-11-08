@@ -20,6 +20,8 @@
 :root[data-mode="manager"] .manager-panel { margin-bottom: 24px; }
 :root[data-mode="manager"] .shop-products { margin-top: 20px; }
 :root[data-mode="manager"] .manager-only { display: block !important; }
+:root[data-mode="manager"] .manager-save-prices { display: flex !important; grid-column: 1 / -1; align-items: center; gap: 14px; padding: 8px 0 2px; }
+:root[data-mode="manager"] .manager-save-prices .login-status { margin: 0; }
 
 /* Layout: one site, two views. Home = hero + "at a glance" ledger + animal cards + what each profile covers.
    Breeds = three accordion rows (Cow, Buffalo, Goat); each opens a grid of breed cards. */

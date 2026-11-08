@@ -346,7 +346,7 @@
     event.preventDefault();
     var form = event.currentTarget;
     var status = document.getElementById('prices-status');
-    var button = form.querySelector('button[type="submit"]');
+    var button = document.querySelector('.manager-save-prices button[type="submit"]');
     button.disabled = true;
     status.className = 'login-status';
     status.textContent = 'Saving prices…';
@@ -466,54 +466,18 @@
   }).join('');
 
 
-  var CARE = {
-    cow: {
-      icon:'🐄', title:'Cow care guide', temp:'About 10–25°C is generally comfortable; provide shade, airflow and plenty of clean water in hot weather.',
-      food:'Green fodder, dry roughage (hay/straw), and a balanced concentrate mix according to body weight and milk output. Provide mineral mixture and salt.',
-      avoid:'Mouldy or rotten feed, contaminated water, sudden feed changes and excessive grain. Do not feed unknown poisonous plants.',
-      routine:'Offer fodder in several meals through the day. Keep clean water available all day. Dairy cows are commonly milked twice daily at regular times; adjust feed with a dairy nutritionist.',
-      milk:'Breed card shows a typical daily range under good management. Yield changes with lactation stage, age, health, feed and climate.',
-      risks:'Mastitis, foot-and-mouth disease (FMD), lumpy skin disease, tick-borne diseases, milk fever and digestive problems. Vaccination, deworming and testing should follow the local veterinarian’s schedule.',
-      season:'Usually manages a range of seasons, but heat stress reduces feed intake and milk. Summer: shade, fans/sprinklers where appropriate and water. Winter: dry bedding and protection from cold wind.'
-    },
-    buffalo: {
-      icon:'🐃', title:'Buffalo care guide', temp:'Around 15–25°C is often comfortable. Buffalo are more heat-sensitive because they dissipate heat less easily; provide shade, ventilation and safe cooling/wallowing facilities.',
-      food:'Good-quality green fodder plus dry roughage and a balanced concentrate based on body weight and milk yield. Add mineral mixture and salt; keep clean water freely available.',
-      avoid:'Mouldy feed, stagnant/dirty water, abrupt diet changes and excess concentrate. Avoid overcrowding and prolonged direct sun.',
-      routine:'Split fodder across the day and keep water available at all times. Regular, calm milking—often twice daily—supports hygiene and udder health.',
-      milk:'Buffalo milk is usually richer in fat than cow milk. The breed card gives a broad daily yield range; actual production varies with feed, lactation and management.',
-      risks:'Mastitis, FMD, haemorrhagic septicaemia, black quarter, parasitic/tick problems and reproductive disorders. Use veterinarian-guided vaccination, parasite control and prompt treatment.',
-      season:'Hot humid weather is especially challenging. Summer needs shade, airflow and safe bathing/cooling; in winter provide dry shelter and protect young or sick animals from cold.'
-    },
-    goat: {
-      icon:'🐐', title:'Goat care guide', temp:'Many breeds do well around 10–30°C when dry and well ventilated. Avoid damp, poorly ventilated housing, extreme heat and cold drafts.',
-      food:'Browse, tree leaves known to be safe, green fodder, hay and a suitable concentrate/mineral mix. Goats are browsers; offer clean roughage and clean water daily.',
-      avoid:'Mouldy feed, wet/dirty bedding, sudden high-grain feeding and toxic plants. Do not let goats depend only on kitchen waste or one type of leaf.',
-      routine:'Divide feed into morning and evening portions, with roughage available. Feed kids, pregnant/lactating does and adult goats according to age and condition; provide clean water at all times.',
-      milk:'Milk yield is lower in volume than most dairy cows and buffaloes. The breed card gives a typical range; it depends on breed, litter size, lactation and nutrition.',
-      risks:'PPR, enterotoxaemia, FMD, goat pox, pneumonia, internal parasites and contagious mastitis. Vaccination, deworming and hoof care need a local veterinary plan.',
-      season:'Dry, mild weather is generally easiest. During monsoon keep the shed dry and reduce parasite exposure; in summer provide shade and water; in winter keep bedding dry.'
-    }
-  };
   function showBreedDetail(animalKey, breedName) {
-    var animal = SPECIES[animalKey], care = CARE[animalKey];
+    var animal = SPECIES[animalKey];
     var breed = animal.breeds.find(function (item) { return item.n === breedName; });
     if (!breed) return;
     var detail = document.getElementById('breed-detail');
     detail.hidden = false;
     detail.innerHTML = '<div class="detail-head t-' + animalKey + '">' +
-      '<div class="detail-animal" role="img" aria-label="' + animal.name + '">' + care.icon + '</div>' +
+      '<div class="detail-animal" role="img" aria-label="' + animal.name + '">' + (animalKey === 'cow' ? '🐄' : animalKey === 'buffalo' ? '🐃' : '🐐') + '</div>' +
       '<div><p class="eyebrow">Breed profile</p><h2>' + breed.n + '</h2><p>' + breed.o + ' · ' + breed.t + '</p></div>' +
       '<button class="close-detail" type="button" aria-label="Close details">×</button></div>' +
       '<p class="detail-summary">' + breed.d + '</p>' +
-      '<div class="detail-stats"><div><span>Milk per day</span><strong>' + yieldText(breed.y) + ' L</strong></div><div><span>Milk fat</span><strong>' + fatText(breed.f) + '%</strong></div></div>' +
-      '<h3>' + care.title + '</h3><div class="care-grid">' +
-      '<article><h4>🌡️ Temperature &amp; weather</h4><p>' + care.temp + '</p><p>' + care.season + '</p></article>' +
-      '<article><h4>🌿 What it should eat</h4><p>' + care.food + '</p><p><b>Avoid:</b> ' + care.avoid + '</p></article>' +
-      '<article><h4>🕒 Feeding &amp; milking routine</h4><p>' + care.routine + '</p></article>' +
-      '<article><h4>🥛 Milk production</h4><p>' + care.milk + '</p></article>' +
-      '<article class="health-card"><h4>🩺 Common diseases &amp; prevention</h4><p>' + care.risks + '</p></article></div>' +
-      '<p class="care-note">Care figures are general educational guidance, not a veterinary prescription. Exact feed quantity and treatment depend on age, body weight, pregnancy, milk yield and local conditions. Consult a veterinarian for illness or a farm-specific ration.</p>';
+      '<div class="detail-stats"><div><span>Milk yield (typical per day)</span><strong>' + yieldText(breed.y) + ' L</strong></div><div><span>Milk fat (typical)</span><strong>' + fatText(breed.f) + '%</strong></div></div>';
     detail.scrollIntoView({behavior: reduced() ? 'auto' : 'smooth', block:'start'});
   }
 
