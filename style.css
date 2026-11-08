@@ -350,7 +350,7 @@ td:first-child { font: 700 1.05rem var(--font-display); }
 @media (max-width: 600px) {
   .availability-heading { display:block; }
   .availability-heading .foot-note { margin-top:8px; text-align:left; }
-  .availability-showcase { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  .availability-showcase { grid-template-columns:minmax(0, 1fr); }
   .shop-products { grid-template-columns:repeat(2, minmax(0, 1fr)); }
   .inventory-form, .pricing-form { grid-template-columns:1fr; }
   .shop-heading { align-items:flex-start; flex-direction:column; }
