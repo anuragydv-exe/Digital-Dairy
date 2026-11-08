@@ -533,16 +533,6 @@
   document.getElementById('glance-body').innerHTML = rows;
   document.getElementById('glance-note').textContent = total + ' breeds across 3 animals. Ranges cover all breeds listed for each animal.';
 
-  /* Home: animal cards */
-  document.getElementById('species-cards').innerHTML = KEYS.map(function (k) {
-    var s = SPECIES[k];
-    var animalIcon = { cow: '🐄', buffalo: '🐃', goat: '🐐' }[k];
-    return '<a class="sp t-' + k + '" href="#breeds-' + k + '" data-go="breeds-' + k + '">' +
-      '<span class="animal-mini" role="img" aria-label="' + s.name + '">' + animalIcon + '</span>' +
-      '<span class="sp-copy"><span class="count">' + plural(s.breeds.length) + '</span>' +
-      '<h3>' + s.name + '</h3><span class="go">Explore breeds →</span></span></a>';
-  }).join('');
-
   /* Breeds: accordion */
   var chevron = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
   document.getElementById('cats').innerHTML = KEYS.map(function (k) {
