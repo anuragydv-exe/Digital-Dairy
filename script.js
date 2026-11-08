@@ -196,6 +196,9 @@
     document.getElementById('available-paneer').textContent = paneer.toLocaleString();
     document.getElementById('available-ghee').textContent = ghee.toLocaleString();
     document.getElementById('available-curd').textContent = curd.toLocaleString();
+    document.getElementById('paneer-level').style.height = (paneer > 0 ? Math.max(12, Math.min(100, paneer)) : 0) + '%';
+    document.getElementById('ghee-level').style.height = (ghee > 0 ? Math.max(12, Math.min(100, ghee)) : 0) + '%';
+    document.getElementById('curd-level').style.height = (curd > 0 ? Math.max(12, Math.min(100, curd)) : 0) + '%';
     document.getElementById('order-stock-milk').textContent = milk > 0 ? milk.toLocaleString() + ' L available' : 'Currently unavailable';
     document.getElementById('order-stock-paneer').textContent = paneer > 0 ? paneer.toLocaleString() + ' kg available' : 'Currently unavailable';
     document.getElementById('order-stock-ghee').textContent = ghee > 0 ? ghee.toLocaleString() + ' kg available' : 'Currently unavailable';
