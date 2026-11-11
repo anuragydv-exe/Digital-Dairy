@@ -259,6 +259,9 @@ td:first-child { font: 700 1.05rem var(--font-display); }
 .availability-heading { display:flex; align-items:end; justify-content:space-between; gap:20px; margin-bottom:16px; }
 .availability-heading .sec { margin:4px 0 0; }
 .availability-heading .foot-note { margin:0; text-align:right; }
+.sensor-section-heading { margin-bottom:16px; }
+.sensor-section-heading .sec { margin:4px 0 0; }
+.sensor-section .temperature-card { max-width:900px; }
 .availability-showcase { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; }
 .milk-tank, .animal-stock { padding:22px; border:1px solid var(--line); border-radius:16px; background:var(--surface); }
 .milk-tank { display:flex; align-items:center; gap:20px; }
