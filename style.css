@@ -262,6 +262,12 @@ td:first-child { font: 700 1.05rem var(--font-display); }
 .sensor-section-heading { margin-bottom:16px; }
 .sensor-section-heading .sec { margin:4px 0 0; }
 .sensor-section .temperature-card { max-width:900px; }
+.flame-alert { display:flex; align-items:center; gap:12px; max-width:900px; margin:0 0 14px; padding:15px 18px; border:1px solid #ef5b55; border-radius:14px; background:color-mix(in srgb, #ef5b55 13%, var(--surface)); color:var(--fg); }
+.flame-alert[hidden] { display:none; }
+.flame-alert > span { font-size:1.6rem; }
+.flame-alert div { display:grid; gap:2px; }
+.flame-alert strong { color:#c93630; }
+.flame-alert div span { color:var(--muted); }
 .availability-showcase { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; }
 .milk-tank, .animal-stock { padding:22px; border:1px solid var(--line); border-radius:16px; background:var(--surface); }
 .milk-tank { display:flex; align-items:center; gap:20px; }

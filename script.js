@@ -407,11 +407,16 @@
       if (!response.ok) throw new Error(data.error || 'Could not load sensor reading.');
       var hasReading = Number.isFinite(data.temperatureC) && Number.isFinite(data.humidityPct);
       var flameValue = document.getElementById('flame-value');
+      var flameAlert = document.getElementById('flame-alert');
       document.getElementById('temperature-value').textContent = hasReading ? Number(data.temperatureC).toFixed(1) : '--';
       document.getElementById('humidity-value').textContent = hasReading ? String(Math.round(Number(data.humidityPct))) : '--';
       flameValue.textContent = typeof data.flameDetected === 'boolean' ? (data.flameDetected ? 'Detected' : 'Clear') : '--';
       flameValue.dataset.fire = data.flameDetected === true ? 'true' : 'false';
       flameValue.dataset.available = typeof data.flameDetected === 'boolean' ? 'true' : 'false';
+      flameAlert.hidden = !(hasReading && data.flameDetected === true);
+      document.getElementById('flame-alert-detail').textContent = data.online
+        ? 'Check the area now.'
+        : 'The last reading reported a trigger, but the sensor is offline. Check the area.';
       if (!hasReading) {
         status.textContent = 'Waiting for ESP32 sensor…';
         updated.textContent = '';
@@ -426,6 +431,7 @@
       status.dataset.online = 'false';
       document.getElementById('flame-value').textContent = '--';
       document.getElementById('flame-value').dataset.available = 'false';
+      document.getElementById('flame-alert').hidden = true;
     }
   }
 

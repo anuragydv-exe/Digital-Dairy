@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="style.css?v=20261111-2">
+<link rel="stylesheet" href="style.css?v=20261111-3">
 </head>
 <body>
 <section class="login-screen" id="login-screen" aria-labelledby="login-title">
@@ -120,6 +120,10 @@
           <p class="eyebrow">Live farm monitoring</p>
           <h2 class="sec" id="sensor-section-title">Sensor readings</h2>
         </div>
+        <div class="flame-alert" id="flame-alert" role="alert" aria-live="assertive" hidden>
+          <span aria-hidden="true">⚠️</span>
+          <div><strong>Flame sensor triggered</strong><span id="flame-alert-detail">Check the area now.</span></div>
+        </div>
         <article class="temperature-card" aria-labelledby="temperature-title" aria-live="polite">
           <div class="temperature-card-heading"><span class="temperature-icon" aria-hidden="true">🌡️</span><div><span class="stock-label">Cowshed sensor</span><h3 id="temperature-title">Temperature, humidity &amp; flame</h3></div></div>
           <div class="temperature-readings">
@@ -228,6 +232,6 @@
     <p>Digital Dairy. Yield and fat figures are typical ranges under good management. Actual values change with feed, climate, lactation stage and the individual animal.</p>
   </footer>
 </div>
-<script src="script.js?v=20261111-1"></script>
+<script src="script.js?v=20261111-2"></script>
 </body>
 </html>
