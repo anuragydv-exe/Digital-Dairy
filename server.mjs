@@ -11,6 +11,7 @@ app.use(express.static(here));
 
 const attemptsByIp = new Map();
 const managerSessions = new Map();
+let latestTemperatureReading = null;
 
 function sessionToken(req) {
   const cookie = String(req.headers.cookie || '');
@@ -70,6 +71,39 @@ app.get('/api/inventory', async (req, res) => {
 
 app.get('/api/manager/session', (req, res) => {
   return res.json({ manager: managerSession(req) });
+});
+
+app.get('/api/temperature', (req, res) => {
+  if (!latestTemperatureReading) {
+    return res.json({ online: false, temperatureC: null, humidityPct: null, flameDetected: null, receivedAt: null });
+  }
+  const ageMs = Date.now() - Date.parse(latestTemperatureReading.receivedAt);
+  return res.json({ ...latestTemperatureReading, online: ageMs <= 90000 });
+});
+
+app.post('/api/temperature', (req, res) => {
+  const expectedToken = process.env.ESP32_DEVICE_TOKEN;
+  if (!expectedToken) return res.status(503).json({ error: 'Temperature sensor is not configured.' });
+  const authorization = String(req.get('authorization') || '');
+  const suppliedToken = authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+  if (!constantTimeMatch(suppliedToken, expectedToken)) {
+    return res.status(401).json({ error: 'Unauthorized sensor.' });
+  }
+
+  const { temperatureC, humidityPct, flameDetected } = req.body ?? {};
+  if (!Number.isFinite(temperatureC) || temperatureC < -10 || temperatureC > 60 ||
+      !Number.isFinite(humidityPct) || humidityPct < 0 || humidityPct > 100 ||
+      typeof flameDetected !== 'boolean') {
+    return res.status(400).json({ error: 'Enter valid temperature, humidity, and flame readings.' });
+  }
+
+  latestTemperatureReading = {
+    temperatureC: Math.round(temperatureC * 10) / 10,
+    humidityPct: Math.round(humidityPct),
+    flameDetected,
+    receivedAt: new Date().toISOString(),
+  };
+  return res.status(202).json({ ok: true, receivedAt: latestTemperatureReading.receivedAt });
 });
 
 app.post('/api/manager/login', (req, res) => {

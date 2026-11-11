@@ -398,6 +398,37 @@
     }
   }
 
+  async function loadTemperature() {
+    var status = document.getElementById('temperature-status');
+    var updated = document.getElementById('temperature-updated');
+    try {
+      var response = await fetch('/api/temperature', { cache: 'no-store' });
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok) throw new Error(data.error || 'Could not load sensor reading.');
+      var hasReading = Number.isFinite(data.temperatureC) && Number.isFinite(data.humidityPct);
+      var flameValue = document.getElementById('flame-value');
+      document.getElementById('temperature-value').textContent = hasReading ? Number(data.temperatureC).toFixed(1) : '--';
+      document.getElementById('humidity-value').textContent = hasReading ? String(Math.round(Number(data.humidityPct))) : '--';
+      flameValue.textContent = typeof data.flameDetected === 'boolean' ? (data.flameDetected ? 'Detected' : 'Clear') : '--';
+      flameValue.dataset.fire = data.flameDetected === true ? 'true' : 'false';
+      flameValue.dataset.available = typeof data.flameDetected === 'boolean' ? 'true' : 'false';
+      if (!hasReading) {
+        status.textContent = 'Waiting for ESP32 sensor…';
+        updated.textContent = '';
+      } else {
+        status.textContent = data.online ? 'Sensor online' : 'Sensor offline · showing last reading';
+        updated.textContent = data.receivedAt ? 'Last reading: ' + new Date(data.receivedAt).toLocaleString() : '';
+      }
+      status.dataset.online = hasReading && data.online ? 'true' : 'false';
+    } catch (error) {
+      status.textContent = 'Could not connect to the temperature service.';
+      updated.textContent = '';
+      status.dataset.online = 'false';
+      document.getElementById('flame-value').textContent = '--';
+      document.getElementById('flame-value').dataset.available = 'false';
+    }
+  }
+
   document.getElementById('inventory-form').addEventListener('submit', async function (event) {
     event.preventDefault();
     var form = event.currentTarget;
@@ -675,5 +706,7 @@
     }
   }
   loadInventory();
+  loadTemperature();
+  window.setInterval(loadTemperature, 15000);
   initialiseAccess();
 })();

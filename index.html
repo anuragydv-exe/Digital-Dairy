@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="style.css?v=20261108-4">
+<link rel="stylesheet" href="style.css?v=20261111-1">
 </head>
 <body>
 <section class="login-screen" id="login-screen" aria-labelledby="login-title">
@@ -102,6 +102,16 @@
           <article class="product-stock-card" aria-label="Curd availability">
             <div class="stock-vessel curd-vessel" aria-hidden="true"><div class="vessel-fill" id="curd-level"></div><span class="vessel-label">Curd</span></div>
             <div class="stock-copy"><span class="stock-label">Curd</span><strong><span id="available-curd">Loading…</span> <small>kg</small></strong><small>available today</small></div>
+          </article>
+          <article class="temperature-card" aria-labelledby="temperature-title" aria-live="polite">
+            <div class="temperature-card-heading"><span class="temperature-icon" aria-hidden="true">🌡️</span><div><span class="stock-label">Cowshed sensor</span><h3 id="temperature-title">Temperature, humidity &amp; flame</h3></div></div>
+            <div class="temperature-readings">
+              <div><strong id="temperature-value">--</strong><span>°C</span><small>Temperature</small></div>
+              <div><strong id="humidity-value">--</strong><span>%</span><small>Humidity</small></div>
+              <div class="flame-reading"><strong id="flame-value" data-fire="false" data-available="false">--</strong><small>Flame status</small></div>
+            </div>
+            <p class="temperature-status" id="temperature-status">Waiting for ESP32 sensor…</p>
+            <small class="temperature-updated" id="temperature-updated"></small>
           </article>
           <article class="animal-stock">
             <span class="stock-label">Animals on the farm</span>
@@ -211,6 +221,6 @@
     <p>Digital Dairy. Yield and fat figures are typical ranges under good management. Actual values change with feed, climate, lactation stage and the individual animal.</p>
   </footer>
 </div>
-<script src="script.js?v=20261108-4"></script>
+<script src="script.js?v=20261111-1"></script>
 </body>
 </html>
