@@ -116,26 +116,58 @@
       </section>
 
       <section class="block sensor-section" aria-labelledby="sensor-section-title">
-        <div class="sensor-section-heading">
-          <p class="eyebrow">Live farm monitoring</p>
-          <h2 class="sec" id="sensor-section-title">Sensor readings</h2>
-        </div>
-        <div class="flame-alert" id="flame-alert" role="alert" aria-live="assertive" hidden>
-          <span aria-hidden="true">⚠️</span>
-          <div><strong>Flame sensor triggered</strong><span id="flame-alert-detail">Check the area now.</span></div>
-        </div>
-        <article class="temperature-card" aria-labelledby="temperature-title" aria-live="polite">
-          <div class="temperature-card-heading"><span class="temperature-icon" aria-hidden="true">🌡️</span><div><span class="stock-label">Cowshed sensor</span><h3 id="temperature-title">Temperature, humidity &amp; flame</h3></div></div>
-          <div class="temperature-readings">
-            <div><strong id="temperature-value">--</strong><span>°C</span><small>Temperature</small></div>
-            <div><strong id="humidity-value">--</strong><span>%</span><small>Humidity</small></div>
-            <div class="flame-reading"><strong id="flame-value" data-fire="false" data-available="false">--</strong><small>Flame status</small></div>
-          </div>
-          <p class="temperature-status" id="temperature-status">Waiting for ESP32 sensor…</p>
-          <small class="temperature-updated" id="temperature-updated"></small>
-        </article>
-      </section>
+  <div class="sensor-section-heading">
+    <p class="eyebrow">Live farm monitoring</p>
+    <h2 class="sec" id="sensor-section-title">Sensor readings</h2>
+  </div>
 
+  <div class="flame-alert" id="gas-alert" role="alert" aria-live="assertive" hidden>
+    <span aria-hidden="true">⚠️</span>
+    <div>
+      <strong>Gas detected!</strong>
+      <span>Check the cowshed environment.</span>
+    </div>
+  </div>
+
+  <article class="temperature-card" aria-live="polite">
+    <div class="temperature-card-heading">
+      <span class="temperature-icon">🌡️</span>
+      <div>
+        <span class="stock-label">Cowshed sensor</span>
+        <h3>Temperature, humidity &amp; gas</h3>
+      </div>
+    </div>
+
+    <div class="temperature-readings">
+      <div>
+        <strong id="temperature-value">--</strong>
+        <span>°C</span>
+        <small>Temperature</small>
+      </div>
+
+      <div>
+        <strong id="humidity-value">--</strong>
+        <span>%</span>
+        <small>Humidity</small>
+      </div>
+
+      <div>
+        <strong id="gas-value">--</strong>
+        <small>MQ-2 Gas Value</small>
+      </div>
+
+      <div class="flame-reading">
+        <strong id="gas-status">--</strong>
+        <small>Gas status</small>
+      </div>
+    </div>
+
+    <p class="temperature-status" id="temperature-status">
+      Waiting for ESP32 sensor…
+    </p>
+    <small class="temperature-updated" id="temperature-updated"></small>
+  </article>
+</section>
       <section class="block order-panel" id="order-panel" aria-labelledby="order-title">
         <div class="shop-heading"><div><p class="eyebrow">Farm fresh, delivered</p><h2 class="sec" id="order-title">Order milk &amp; dairy products</h2><p class="lead customer-only">Add products to your basket, choose delivery details, and place your order.</p><p class="lead manager-only">Set a price in each product card, then save prices below.</p></div><span class="delivery-badge">🥛 Fresh from our farm</span></div>
         <div class="shop-products" role="group" aria-label="Choose a dairy product">
