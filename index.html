@@ -1,269 +1,763 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Digital Dairy</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="style.css?v=20261111-3">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <title>Digital Dairy</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap"
+  >
+
+  <link rel="stylesheet" href="style.css?v=20261125-1">
 </head>
+
 <body>
+
+<!-- CUSTOMER LOGIN -->
 <section class="login-screen" id="login-screen" aria-labelledby="login-title">
   <div class="login-card">
-    <a class="brand login-brand" href="#" aria-label="Digital Dairy"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.4c3.7 4.5 6.1 7.8 6.1 11.1a6.1 6.1 0 0 1-12.2 0c0-3.3 2.4-6.6 6.1-11.1z"/></svg>Digital Dairy</a>
+
+    <a class="brand login-brand" href="#" aria-label="Digital Dairy">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor" d="M12 2.4c3.7 4.5 6.1 7.8 6.1 11.1a6.1 6.1 0 0 1-12.2 0c0-3.3 2.4-6.6 6.1-11.1z"/>
+      </svg>
+      Digital Dairy
+    </a>
+
     <p class="eyebrow">Customer access</p>
     <h1 id="login-title">Sign in</h1>
-    <p class="lead login-lead">Enter your name and phone number to continue to the breed guide.</p>
+
+    <p class="lead login-lead">
+      Enter your name and phone number to continue to the breed guide.
+    </p>
+
     <form id="login-form" novalidate>
+
       <label for="customer-name">Name</label>
-      <input id="customer-name" name="name" type="text" autocomplete="name" maxlength="80" required>
+      <input
+        id="customer-name"
+        name="name"
+        type="text"
+        autocomplete="name"
+        maxlength="80"
+        required
+      >
+
       <label for="customer-phone">Phone number</label>
-      <input id="customer-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="e.g. +91 98765 43210" required>
-      <label class="consent-row"><input id="customer-consent" name="consent" type="checkbox" required><span>I agree to save my name and phone number in Digital Dairy’s private customer list.</span></label>
-      <p class="login-privacy">No password or ID is required. Your phone number is saved as entered and is not verified.</p>
-      <button class="btn" id="login-submit" type="submit">Continue</button>
+      <input
+        id="customer-phone"
+        name="phone"
+        type="tel"
+        inputmode="tel"
+        autocomplete="tel"
+        maxlength="20"
+        placeholder="e.g. +91 98765 43210"
+        required
+      >
+
+      <label class="consent-row">
+        <input id="customer-consent" name="consent" type="checkbox" required>
+        <span>
+          I agree to save my name and phone number in Digital Dairy’s private customer list.
+        </span>
+      </label>
+
+      <p class="login-privacy">
+        No password or ID is required. Your phone number is saved as entered and is not verified.
+      </p>
+
+      <button class="btn" id="login-submit" type="submit">
+        Continue
+      </button>
+
       <p id="login-status" class="login-status" role="status" aria-live="polite"></p>
-       <button class="text-button" id="open-manager-login" type="button">Manager login</button>
+
+      <button class="text-button" id="open-manager-login" type="button">
+        Manager login
+      </button>
+
     </form>
   </div>
 </section>
 
- <section class="login-screen" id="manager-login-screen" aria-labelledby="manager-login-title" hidden>
-   <div class="login-card">
-     <p class="eyebrow">Manager access</p>
-     <h1 id="manager-login-title">Manager login</h1>
-     <p class="lead login-lead">Update today’s available milk and number of animals.</p>
-     <form id="manager-login-form">
-       <label for="manager-password">Manager password</label>
-       <input id="manager-password" name="password" type="password" autocomplete="current-password" required>
-       <button class="btn" id="manager-login-submit" type="submit">Log in</button>
-       <p id="manager-login-status" class="login-status" role="status" aria-live="polite"></p>
-       <button class="text-button" id="back-to-customer-login" type="button">Back to customer login</button>
-     </form>
-   </div>
- </section>
 
+<!-- MANAGER LOGIN -->
+<section
+  class="login-screen"
+  id="manager-login-screen"
+  aria-labelledby="manager-login-title"
+  hidden
+>
+  <div class="login-card">
+
+    <p class="eyebrow">Manager access</p>
+    <h1 id="manager-login-title">Manager login</h1>
+
+    <p class="lead login-lead">
+      Update today’s available milk and number of animals.
+    </p>
+
+    <form id="manager-login-form">
+
+      <label for="manager-password">Manager password</label>
+      <input
+        id="manager-password"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+      >
+
+      <button class="btn" id="manager-login-submit" type="submit">
+        Log in
+      </button>
+
+      <p
+        id="manager-login-status"
+        class="login-status"
+        role="status"
+        aria-live="polite"
+      ></p>
+
+      <button class="text-button" id="back-to-customer-login" type="button">
+        Back to customer login
+      </button>
+
+    </form>
+  </div>
+</section>
+
+
+<!-- MAIN APPLICATION -->
 <div class="wrap" id="site-app" hidden>
+
   <header class="bar">
+
     <a class="brand" href="#home" data-go="home" aria-label="Digital Dairy home">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.4c3.7 4.5 6.1 7.8 6.1 11.1a6.1 6.1 0 0 1-12.2 0c0-3.3 2.4-6.6 6.1-11.1z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor" d="M12 2.4c3.7 4.5 6.1 7.8 6.1 11.1a6.1 6.1 0 0 1-12.2 0c0-3.3 2.4-6.6 6.1-11.1z"/>
+      </svg>
       Digital Dairy
     </a>
+
     <nav aria-label="Main">
       <a href="#home" data-go="home" id="nav-home">Home</a>
       <a href="#breeds" data-go="breeds" id="nav-breeds">Breeds</a>
       <a href="#orders" data-go="orders" id="nav-orders">Orders</a>
     </nav>
-    <div class="customer-session"><span id="customer-greeting"></span><button type="button" id="sign-out">Sign out</button></div>
+
+    <div class="customer-session">
+      <span id="customer-greeting"></span>
+      <button type="button" id="sign-out">Sign out</button>
+    </div>
+
   </header>
 
+
   <main>
-    <!-- PAGE 1: HOME -->
+
+    <!-- HOME PAGE -->
     <section id="view-home" aria-labelledby="home-title">
+
       <div class="hero">
+
         <div class="hero-copy">
+
           <p class="eyebrow">Dairy breed reference</p>
-          <h1 id="home-title" tabindex="-1">Welcome to <span class="mark">Digital Dairy</span></h1>
-          <p class="lead">Digital Dairy is a detailed reference for dairy animal breeds. Each profile explains where a breed comes from, how much milk it gives, how rich that milk is and what the animal is like to keep.</p>
-          <a class="btn" id="explore-breeds" href="#breeds" data-go="breeds">Explore breeds <span aria-hidden="true">→</span></a>
+
+          <h1 id="home-title" tabindex="-1">
+            Welcome to <span class="mark">Digital Dairy</span>
+          </h1>
+
+          <p class="lead">
+            Digital Dairy is a detailed reference for dairy animal breeds.
+            Each profile explains where a breed comes from, how much milk it gives,
+            how rich that milk is and what the animal is like to keep.
+          </p>
+
+          <a class="btn" id="explore-breeds" href="#breeds" data-go="breeds">
+            Explore breeds <span aria-hidden="true">→</span>
+          </a>
+
         </div>
+
         <aside class="ledger" aria-labelledby="glance-title">
+
           <h2 id="glance-title">At a glance</h2>
+
           <div class="tablewrap">
             <table>
-              <thead><tr><th>Animal</th><th>Breeds</th><th>Fat %</th><th>Litres/day</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Animal</th>
+                  <th>Breeds</th>
+                  <th>Fat %</th>
+                  <th>Litres/day</th>
+                </tr>
+              </thead>
               <tbody id="glance-body"></tbody>
             </table>
           </div>
+
           <p class="foot-note" id="glance-note"></p>
+
         </aside>
       </div>
 
+
+      <!-- DAIRY AVAILABILITY -->
       <section class="block availability" aria-labelledby="availability-title">
+
         <div class="availability-heading">
-          <div><p class="eyebrow">Fresh from the farm</p><h2 class="sec" id="availability-title">Today’s dairy availability</h2></div>
+          <div>
+            <p class="eyebrow">Fresh from the farm</p>
+            <h2 class="sec" id="availability-title">
+              Today’s dairy availability
+            </h2>
+          </div>
+
           <p class="foot-note" id="availability-status" aria-live="polite"></p>
         </div>
+
         <div class="availability-showcase">
+
           <article class="milk-tank stock-card" aria-label="Milk availability">
-            <div class="tank-shell"><div class="milk-level" id="milk-level"><span>Fresh milk</span></div></div>
-            <div><span class="stock-label">Fresh milk</span><strong id="available-milk">Loading…</strong><small>litres available</small></div>
+            <div class="tank-shell">
+              <div class="milk-level" id="milk-level">
+                <span>Fresh milk</span>
+              </div>
+            </div>
+
+            <div>
+              <span class="stock-label">Fresh milk</span>
+              <strong id="available-milk">Loading…</strong>
+              <small>litres available</small>
+            </div>
           </article>
+
+
           <article class="product-stock-card" aria-label="Paneer availability">
-            <div class="stock-vessel paneer-vessel" aria-hidden="true"><div class="vessel-fill" id="paneer-level"></div><span class="vessel-label">Paneer</span></div>
-            <div class="stock-copy"><span class="stock-label">Paneer</span><strong><span id="available-paneer">Loading…</span> <small>kg</small></strong><small>available today</small></div>
+            <div class="stock-vessel paneer-vessel" aria-hidden="true">
+              <div class="vessel-fill" id="paneer-level"></div>
+              <span class="vessel-label">Paneer</span>
+            </div>
+
+            <div class="stock-copy">
+              <span class="stock-label">Paneer</span>
+              <strong>
+                <span id="available-paneer">Loading…</span>
+                <small>kg</small>
+              </strong>
+              <small>available today</small>
+            </div>
           </article>
+
+
           <article class="product-stock-card" aria-label="Ghee availability">
-            <div class="stock-vessel ghee-vessel" aria-hidden="true"><div class="vessel-fill" id="ghee-level"></div><span class="vessel-label">Ghee</span></div>
-            <div class="stock-copy"><span class="stock-label">Ghee</span><strong><span id="available-ghee">Loading…</span> <small>kg</small></strong><small>available today</small></div>
+            <div class="stock-vessel ghee-vessel" aria-hidden="true">
+              <div class="vessel-fill" id="ghee-level"></div>
+              <span class="vessel-label">Ghee</span>
+            </div>
+
+            <div class="stock-copy">
+              <span class="stock-label">Ghee</span>
+              <strong>
+                <span id="available-ghee">Loading…</span>
+                <small>kg</small>
+              </strong>
+              <small>available today</small>
+            </div>
           </article>
+
+
           <article class="product-stock-card" aria-label="Curd availability">
-            <div class="stock-vessel curd-vessel" aria-hidden="true"><div class="vessel-fill" id="curd-level"></div><span class="vessel-label">Curd</span></div>
-            <div class="stock-copy"><span class="stock-label">Curd</span><strong><span id="available-curd">Loading…</span> <small>kg</small></strong><small>available today</small></div>
+            <div class="stock-vessel curd-vessel" aria-hidden="true">
+              <div class="vessel-fill" id="curd-level"></div>
+              <span class="vessel-label">Curd</span>
+            </div>
+
+            <div class="stock-copy">
+              <span class="stock-label">Curd</span>
+              <strong>
+                <span id="available-curd">Loading…</span>
+                <small>kg</small>
+              </strong>
+              <small>available today</small>
+            </div>
           </article>
+
+
           <article class="animal-stock">
+
             <span class="stock-label">Animals on the farm</span>
             <strong id="animal-count">Loading…</strong>
+
             <div class="animal-breakdown" aria-label="Animal breakdown">
               <span>🐄 <b id="cow-count">—</b> Cows</span>
               <span>🐃 <b id="buffalo-count">—</b> Buffaloes</span>
               <span>🐐 <b id="goat-count">—</b> Goats</span>
             </div>
+
           </article>
+
         </div>
       </section>
 
+
+      <!-- LIVE SENSOR MONITORING -->
       <section class="block sensor-section" aria-labelledby="sensor-section-title">
-  <div class="sensor-section-heading">
-    <p class="eyebrow">Live farm monitoring</p>
-    <h2 class="sec" id="sensor-section-title">Sensor readings</h2>
-  </div>
 
-  <div class="flame-alert" id="gas-alert" role="alert" aria-live="assertive" hidden>
-    <span aria-hidden="true">⚠️</span>
-    <div>
-      <strong>Gas detected!</strong>
-      <span>Check the cowshed environment.</span>
-    </div>
-  </div>
-
-  <article class="temperature-card" aria-live="polite">
-    <div class="temperature-card-heading">
-      <span class="temperature-icon">🌡️</span>
-      <div>
-        <span class="stock-label">Cowshed sensor</span>
-        <h3>Temperature, humidity &amp; gas</h3>
-      </div>
-    </div>
-
-    <div class="temperature-readings">
-      <div>
-        <strong id="temperature-value">--</strong>
-        <span>°C</span>
-        <small>Temperature</small>
-      </div>
-
-      <div>
-        <strong id="humidity-value">--</strong>
-        <span>%</span>
-        <small>Humidity</small>
-      </div>
-
-      <div>
-        <strong id="gas-value">--</strong>
-        <small>MQ-2 Gas Value</small>
-      </div>
-
-      <div class="flame-reading">
-        <strong id="gas-status">--</strong>
-        <small>Gas status</small>
-      </div>
-    </div>
-
-    <p class="temperature-status" id="temperature-status">
-      Waiting for ESP32 sensor…
-    </p>
-    <small class="temperature-updated" id="temperature-updated"></small>
-  </article>
-</section>
-      <section class="block order-panel" id="order-panel" aria-labelledby="order-title">
-        <div class="shop-heading"><div><p class="eyebrow">Farm fresh, delivered</p><h2 class="sec" id="order-title">Order milk &amp; dairy products</h2><p class="lead customer-only">Add products to your basket, choose delivery details, and place your order.</p><p class="lead manager-only">Set a price in each product card, then save prices below.</p></div><span class="delivery-badge">🥛 Fresh from our farm</span></div>
-        <div class="shop-products" role="group" aria-label="Choose a dairy product">
-          <article class="shop-product" data-shop-product="Milk"><span class="shop-product-icon">🥛</span><span class="shop-product-name">Fresh Milk</span><span class="shop-product-price" id="price-milk">₹— / L</span><span class="shop-product-stock" id="order-stock-milk">Loading availability</span><button class="shop-add" type="button" data-cart-add="Milk" disabled>Add</button><div class="shop-stepper" id="stepper-milk" hidden><button type="button" data-cart-change="-1" data-product="Milk" aria-label="Remove one litre of milk">−</button><output id="cart-qty-milk">0</output><button type="button" data-cart-change="1" data-product="Milk" aria-label="Add one litre of milk">+</button></div><label class="manager-price-control" for="manager-milk-rate">Set price (₹ / L)<input id="manager-milk-rate" name="milkRate" form="pricing-form" type="number" min="0.01" step="0.01" required></label></article>
-          <article class="shop-product" data-shop-product="Paneer"><span class="shop-product-icon">🧀</span><span class="shop-product-name">Paneer</span><span class="shop-product-price" id="price-paneer">₹— / kg</span><span class="shop-product-stock" id="order-stock-paneer">Loading availability</span><button class="shop-add" type="button" data-cart-add="Paneer" disabled>Add</button><div class="shop-stepper" id="stepper-paneer" hidden><button type="button" data-cart-change="-1" data-product="Paneer" aria-label="Remove one kg of paneer">−</button><output id="cart-qty-paneer">0</output><button type="button" data-cart-change="1" data-product="Paneer" aria-label="Add one kg of paneer">+</button></div><label class="manager-price-control" for="manager-paneer-rate">Set price (₹ / kg)<input id="manager-paneer-rate" name="paneerRate" form="pricing-form" type="number" min="0.01" step="0.01" required></label></article>
-          <article class="shop-product" data-shop-product="Ghee"><span class="shop-product-icon">🫙</span><span class="shop-product-name">Ghee</span><span class="shop-product-price" id="price-ghee">₹— / kg</span><span class="shop-product-stock" id="order-stock-ghee">Loading availability</span><button class="shop-add" type="button" data-cart-add="Ghee" disabled>Add</button><div class="shop-stepper" id="stepper-ghee" hidden><button type="button" data-cart-change="-1" data-product="Ghee" aria-label="Remove one kg of ghee">−</button><output id="cart-qty-ghee">0</output><button type="button" data-cart-change="1" data-product="Ghee" aria-label="Add one kg of ghee">+</button></div><label class="manager-price-control" for="manager-ghee-rate">Set price (₹ / kg)<input id="manager-ghee-rate" name="gheeRate" form="pricing-form" type="number" min="0.01" step="0.01" required></label></article>
-          <article class="shop-product" data-shop-product="Curd"><span class="shop-product-icon">🥣</span><span class="shop-product-name">Curd</span><span class="shop-product-price" id="price-curd">₹— / kg</span><span class="shop-product-stock" id="order-stock-curd">Loading availability</span><button class="shop-add" type="button" data-cart-add="Curd" disabled>Add</button><div class="shop-stepper" id="stepper-curd" hidden><button type="button" data-cart-change="-1" data-product="Curd" aria-label="Remove one kg of curd">−</button><output id="cart-qty-curd">0</output><button type="button" data-cart-change="1" data-product="Curd" aria-label="Add one kg of curd">+</button></div><label class="manager-price-control" for="manager-curd-rate">Set price (₹ / kg)<input id="manager-curd-rate" name="curdRate" form="pricing-form" type="number" min="0.01" step="0.01" required></label></article>
-          <div class="manager-save-prices"><button class="btn" type="submit" form="pricing-form">Save prices</button><p id="prices-status" class="login-status" role="status" aria-live="polite"></p></div>
+        <div class="sensor-section-heading">
+          <p class="eyebrow">Live farm monitoring</p>
+          <h2 class="sec" id="sensor-section-title">Sensor readings</h2>
         </div>
+
+
+        <!-- MQ-2 GAS ALERT -->
+        <div
+          class="flame-alert"
+          id="gas-alert"
+          role="alert"
+          aria-live="assertive"
+          hidden
+        >
+          <span aria-hidden="true">⚠️</span>
+
+          <div>
+            <strong>Gas detected!</strong>
+            <span>Check the cowshed environment.</span>
+          </div>
+        </div>
+
+
+        <!-- SENSOR DATA CARD -->
+        <article class="temperature-card" aria-live="polite">
+
+          <div class="temperature-card-heading">
+
+            <span class="temperature-icon">🌡️</span>
+
+            <div>
+              <span class="stock-label">Cowshed sensor</span>
+              <h3>Temperature, humidity &amp; gas</h3>
+            </div>
+
+          </div>
+
+
+          <div class="temperature-readings">
+
+            <!-- DHT11 TEMPERATURE -->
+            <div>
+              <strong id="temperature-value">--</strong>
+              <span>°C</span>
+              <small>Temperature</small>
+            </div>
+
+
+            <!-- DHT11 HUMIDITY -->
+            <div>
+              <strong id="humidity-value">--</strong>
+              <span>%</span>
+              <small>Humidity</small>
+            </div>
+
+
+            <!-- MQ-2 RAW VALUE -->
+            <div>
+              <strong id="gas-value">--</strong>
+              <small>MQ-2 Gas Value</small>
+            </div>
+
+
+            <!-- MQ-2 STATUS -->
+            <div class="flame-reading">
+              <strong id="gas-status">--</strong>
+              <small>Gas status</small>
+            </div>
+
+          </div>
+
+
+          <p class="temperature-status" id="temperature-status">
+            Waiting for ESP32 sensor…
+          </p>
+
+          <small
+            class="temperature-updated"
+            id="temperature-updated"
+          ></small>
+
+        </article>
+
+      </section>
+
+
+      <!-- PRODUCT ORDER SECTION -->
+      <section class="block order-panel" id="order-panel" aria-labelledby="order-title">
+
+        <div class="shop-heading">
+
+          <div>
+            <p class="eyebrow">Farm fresh, delivered</p>
+
+            <h2 class="sec" id="order-title">
+              Order milk &amp; dairy products
+            </h2>
+
+            <p class="lead customer-only">
+              Add products to your basket, choose delivery details, and place your order.
+            </p>
+
+            <p class="lead manager-only">
+              Set a price in each product card, then save prices below.
+            </p>
+          </div>
+
+          <span class="delivery-badge">🥛 Fresh from our farm</span>
+
+        </div>
+
+
+        <div class="shop-products" role="group" aria-label="Choose a dairy product">
+
+          <!-- MILK -->
+          <article class="shop-product" data-shop-product="Milk">
+            <span class="shop-product-icon">🥛</span>
+            <span class="shop-product-name">Fresh Milk</span>
+            <span class="shop-product-price" id="price-milk">₹— / L</span>
+            <span class="shop-product-stock" id="order-stock-milk">Loading availability</span>
+
+            <button class="shop-add" type="button" data-cart-add="Milk" disabled>
+              Add
+            </button>
+
+            <div class="shop-stepper" id="stepper-milk" hidden>
+              <button type="button" data-cart-change="-1" data-product="Milk" aria-label="Remove one litre of milk">−</button>
+              <output id="cart-qty-milk">0</output>
+              <button type="button" data-cart-change="1" data-product="Milk" aria-label="Add one litre of milk">+</button>
+            </div>
+
+            <label class="manager-price-control" for="manager-milk-rate">
+              Set price (₹ / L)
+              <input id="manager-milk-rate" name="milkRate" form="pricing-form" type="number" min="0.01" step="0.01" required>
+            </label>
+          </article>
+
+
+          <!-- PANEER -->
+          <article class="shop-product" data-shop-product="Paneer">
+            <span class="shop-product-icon">🧀</span>
+            <span class="shop-product-name">Paneer</span>
+            <span class="shop-product-price" id="price-paneer">₹— / kg</span>
+            <span class="shop-product-stock" id="order-stock-paneer">Loading availability</span>
+
+            <button class="shop-add" type="button" data-cart-add="Paneer" disabled>
+              Add
+            </button>
+
+            <div class="shop-stepper" id="stepper-paneer" hidden>
+              <button type="button" data-cart-change="-1" data-product="Paneer" aria-label="Remove one kg of paneer">−</button>
+              <output id="cart-qty-paneer">0</output>
+              <button type="button" data-cart-change="1" data-product="Paneer" aria-label="Add one kg of paneer">+</button>
+            </div>
+
+            <label class="manager-price-control" for="manager-paneer-rate">
+              Set price (₹ / kg)
+              <input id="manager-paneer-rate" name="paneerRate" form="pricing-form" type="number" min="0.01" step="0.01" required>
+            </label>
+          </article>
+
+
+          <!-- GHEE -->
+          <article class="shop-product" data-shop-product="Ghee">
+            <span class="shop-product-icon">🫙</span>
+            <span class="shop-product-name">Ghee</span>
+            <span class="shop-product-price" id="price-ghee">₹— / kg</span>
+            <span class="shop-product-stock" id="order-stock-ghee">Loading availability</span>
+
+            <button class="shop-add" type="button" data-cart-add="Ghee" disabled>
+              Add
+            </button>
+
+            <div class="shop-stepper" id="stepper-ghee" hidden>
+              <button type="button" data-cart-change="-1" data-product="Ghee" aria-label="Remove one kg of ghee">−</button>
+              <output id="cart-qty-ghee">0</output>
+              <button type="button" data-cart-change="1" data-product="Ghee" aria-label="Add one kg of ghee">+</button>
+            </div>
+
+            <label class="manager-price-control" for="manager-ghee-rate">
+              Set price (₹ / kg)
+              <input id="manager-ghee-rate" name="gheeRate" form="pricing-form" type="number" min="0.01" step="0.01" required>
+            </label>
+          </article>
+
+
+          <!-- CURD -->
+          <article class="shop-product" data-shop-product="Curd">
+            <span class="shop-product-icon">🥣</span>
+            <span class="shop-product-name">Curd</span>
+            <span class="shop-product-price" id="price-curd">₹— / kg</span>
+            <span class="shop-product-stock" id="order-stock-curd">Loading availability</span>
+
+            <button class="shop-add" type="button" data-cart-add="Curd" disabled>
+              Add
+            </button>
+
+            <div class="shop-stepper" id="stepper-curd" hidden>
+              <button type="button" data-cart-change="-1" data-product="Curd" aria-label="Remove one kg of curd">−</button>
+              <output id="cart-qty-curd">0</output>
+              <button type="button" data-cart-change="1" data-product="Curd" aria-label="Add one kg of curd">+</button>
+            </div>
+
+            <label class="manager-price-control" for="manager-curd-rate">
+              Set price (₹ / kg)
+              <input id="manager-curd-rate" name="curdRate" form="pricing-form" type="number" min="0.01" step="0.01" required>
+            </label>
+          </article>
+
+
+          <div class="manager-save-prices">
+            <button class="btn" type="submit" form="pricing-form">
+              Save prices
+            </button>
+
+            <p id="prices-status" class="login-status" role="status" aria-live="polite"></p>
+          </div>
+
+        </div>
+
+
+        <!-- ORDER FORM -->
         <form id="order-form" class="order-form">
-          <section class="cart-summary" aria-labelledby="cart-title"><h3 id="cart-title">Your order</h3><div id="cart-items"><p class="cart-empty">Your basket is empty. Add a product above.</p></div><div class="cart-total"><span>Total amount</span><strong id="order-total">₹0.00</strong></div></section>
+
+          <section class="cart-summary" aria-labelledby="cart-title">
+
+            <h3 id="cart-title">Your order</h3>
+
+            <div id="cart-items">
+              <p class="cart-empty">
+                Your basket is empty. Add a product above.
+              </p>
+            </div>
+
+            <div class="cart-total">
+              <span>Total amount</span>
+              <strong id="order-total">₹0.00</strong>
+            </div>
+
+          </section>
+
+
           <div class="order-fields">
+
             <label for="order-name">Your name</label>
             <input id="order-name" name="name" type="text" maxlength="80" required>
+
             <label for="order-phone">Phone number</label>
             <input id="order-phone" name="phone" type="tel" inputmode="tel" maxlength="20" required>
+
             <label for="order-address">Delivery address</label>
-            <textarea id="order-address" name="address" rows="3" maxlength="300" required placeholder="House/flat, street, area, city and PIN code"></textarea>
+            <textarea
+              id="order-address"
+              name="address"
+              rows="3"
+              maxlength="300"
+              required
+              placeholder="House/flat, street, area, city and PIN code"
+            ></textarea>
+
             <label for="payment-method">Payment method</label>
-            <select id="payment-method" name="paymentMethod" required><option value="Cash on delivery">Cash on delivery</option><option value="UPI on delivery">UPI on delivery</option></select>
-            <p class="payment-note">Pay at delivery. Online payments are not processed on this site.</p>
+
+            <select id="payment-method" name="paymentMethod" required>
+              <option value="Cash on delivery">Cash on delivery</option>
+              <option value="UPI on delivery">UPI on delivery</option>
+            </select>
+
+            <p class="payment-note">
+              Pay at delivery. Online payments are not processed on this site.
+            </p>
+
           </div>
-          <button class="btn shop-submit" type="submit" disabled>Place order <span aria-hidden="true">→</span></button>
+
+          <button class="btn shop-submit" type="submit" disabled>
+            Place order <span aria-hidden="true">→</span>
+          </button>
+
           <p id="order-status" class="login-status" role="status" aria-live="polite"></p>
+
         </form>
+
       </section>
 
-      <section class="block manager-panel" id="manager-panel" hidden aria-labelledby="manager-panel-title">
+
+      <!-- MANAGER PANEL -->
+      <section
+        class="block manager-panel"
+        id="manager-panel"
+        hidden
+        aria-labelledby="manager-panel-title"
+      >
+
         <p class="eyebrow">Manager controls</p>
         <h2 class="sec" id="manager-panel-title">Update dairy availability</h2>
+
         <form id="inventory-form" class="inventory-form">
+
           <label for="manager-milk">Milk available (litres)</label>
           <input id="manager-milk" name="milkLitres" type="number" min="0" step="0.1" required>
+
           <label for="manager-paneer">Paneer available (kg)</label>
           <input id="manager-paneer" name="paneerKg" type="number" min="0" step="0.1" required>
+
           <label for="manager-ghee">Ghee available (kg)</label>
           <input id="manager-ghee" name="gheeKg" type="number" min="0" step="0.1" required>
+
           <label for="manager-curd">Curd available (kg)</label>
           <input id="manager-curd" name="curdKg" type="number" min="0" step="0.1" required>
+
           <label for="manager-capacity">Milk tank capacity (litres)</label>
           <input id="manager-capacity" name="milkCapacity" type="number" min="1" step="0.1" required>
+
           <label for="manager-cows">Number of cows</label>
           <input id="manager-cows" name="cows" type="number" min="0" step="1" required>
+
           <label for="manager-buffaloes">Number of buffaloes</label>
           <input id="manager-buffaloes" name="buffaloes" type="number" min="0" step="1" required>
+
           <label for="manager-goats">Number of goats</label>
           <input id="manager-goats" name="goats" type="number" min="0" step="1" required>
+
           <button class="btn" type="submit">Save availability</button>
+
           <p id="inventory-status" class="login-status" role="status" aria-live="polite"></p>
+
         </form>
+
+
         <div class="pricing-panel">
+
           <h3>Set product prices</h3>
-          <p class="foot-note">Enter prices in the cards and use the save button beside them.</p>
-          <form id="pricing-form" class="pricing-form">
-          </form>
+
+          <p class="foot-note">
+            Enter prices in the cards and use the save button beside them.
+          </p>
+
+          <form id="pricing-form" class="pricing-form"></form>
+
         </div>
+
       </section>
 
+
+      <!-- BREED LEARNING -->
       <div class="block" id="profile-learning">
+
         <h2 class="sec">What you can learn about each animal</h2>
+
         <dl class="covers">
-          <div><dt>Origin</dt><dd>The region where the breed developed and where it is kept today.</dd></div>
-          <div><dt>Milk yield</dt><dd>Typical litres per day under good feeding and care.</dd></div>
-          <div><dt>Milk fat</dt><dd>Fat percentage, which decides how suitable the milk is for ghee, butter and paneer.</dd></div>
-          <div><dt>Indigenous or exotic</dt><dd>Whether the breed is native to India or was brought in from abroad.</dd></div>
-          <div><dt>Care guide</dt><dd>Food, feeding routine, weather comfort, milk production and common health concerns.</dd></div>
+
+          <div>
+            <dt>Origin</dt>
+            <dd>The region where the breed developed and where it is kept today.</dd>
+          </div>
+
+          <div>
+            <dt>Milk yield</dt>
+            <dd>Typical litres per day under good feeding and care.</dd>
+          </div>
+
+          <div>
+            <dt>Milk fat</dt>
+            <dd>Fat percentage, which decides how suitable the milk is for ghee, butter and paneer.</dd>
+          </div>
+
+          <div>
+            <dt>Indigenous or exotic</dt>
+            <dd>Whether the breed is native to India or was brought in from abroad.</dd>
+          </div>
+
+          <div>
+            <dt>Care guide</dt>
+            <dd>Food, feeding routine, weather comfort, milk production and common health concerns.</dd>
+          </div>
+
         </dl>
       </div>
 
     </section>
 
-    <!-- PAGE 2: TYPES OF BREEDS -->
+
+    <!-- BREEDS PAGE -->
     <section id="view-breeds" aria-labelledby="breeds-title" hidden>
+
       <div class="intro">
+
         <p class="eyebrow">Breed directory</p>
+
         <h1 id="breeds-title" tabindex="-1">Types of Breeds</h1>
-        <p class="lead">Browse cow, buffalo, and goat breeds. Select a breed to see its origin, type, typical milk yield, and milk fat.</p>
+
+        <p class="lead">
+          Browse cow, buffalo, and goat breeds. Select a breed to see its origin,
+          type, typical milk yield, and milk fat.
+        </p>
+
       </div>
+
       <div class="cats" id="cats"></div>
-      <section id="breed-detail" class="breed-detail" hidden aria-live="polite"></section>
+
+      <section
+        id="breed-detail"
+        class="breed-detail"
+        hidden
+        aria-live="polite"
+      ></section>
+
     </section>
 
+
+    <!-- ORDERS PAGE -->
     <section id="view-orders" aria-labelledby="orders-title" hidden>
+
       <div class="intro">
+
         <p class="eyebrow">Your purchases</p>
+
         <h1 id="orders-title" tabindex="-1">Your orders</h1>
-        <p class="lead">View order receipts and delivery details saved on this device.</p>
+
+        <p class="lead">
+          View order receipts and delivery details saved on this device.
+        </p>
+
       </div>
+
       <div class="order-history" id="order-history"></div>
+
     </section>
+
   </main>
 
+
+  <!-- FOOTER -->
   <footer class="foot">
-    <p>Digital Dairy. Yield and fat figures are typical ranges under good management. Actual values change with feed, climate, lactation stage and the individual animal.</p>
+    <p>
+      Digital Dairy. Yield and fat figures are typical ranges under good management.
+      Actual values change with feed, climate, lactation stage and the individual animal.
+    </p>
   </footer>
+
 </div>
-<script src="script.js?v=20261111-2"></script>
+
+
+<!-- JAVASCRIPT -->
+<script src="script.js?v=20261125-1"></script>
+
 </body>
 </html>
