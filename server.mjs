@@ -1,3 +1,4 @@
+
 import express from 'express';
 import crypto from 'node:crypto';
 import path from 'node:path';
@@ -5,14 +6,17 @@ import { fileURLToPath } from 'node:url';
 
 const app = express();
 const here = path.dirname(fileURLToPath(import.meta.url));
+
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '20kb' }));
 app.use(express.static(here));
 
 const attemptsByIp = new Map();
 const managerSessions = new Map();
+
 let latestTemperatureReading = null;
 
+// Manager session helpers
 function sessionToken(req) {
   const cookie = String(req.headers.cookie || '');
   const match = cookie.match(/(?:^|;\s*)digitalDairyManager=([^;]+)/);
@@ -22,214 +26,591 @@ function sessionToken(req) {
 function managerSession(req) {
   const token = sessionToken(req);
   const expiresAt = managerSessions.get(token);
+
   if (!expiresAt || expiresAt < Date.now()) {
     managerSessions.delete(token);
     return false;
   }
+
   return true;
 }
 
 function clearManagerCookie(res, req) {
-  res.setHeader('Set-Cookie', `digitalDairyManager=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${req.secure ? '; Secure' : ''}`);
+  res.setHeader(
+    'Set-Cookie',
+    `digitalDairyManager=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${req.secure ? '; Secure' : ''}`
+  );
 }
 
 function constantTimeMatch(value, expected) {
   const a = Buffer.from(value);
   const b = Buffer.from(expected);
+
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+// Google Sheets helper
 async function customerSheetRequest(payload) {
   const webAppUrl = process.env.GOOGLE_SHEETS_WEB_APP_URL;
   const sharedSecret = process.env.GOOGLE_SHEETS_SHARED_SECRET;
-  if (!webAppUrl || !sharedSecret) throw new Error('NOT_CONFIGURED');
+
+  if (!webAppUrl || !sharedSecret) {
+    throw new Error('NOT_CONFIGURED');
+  }
 
   const sheetResponse = await fetch(webAppUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ secret: sharedSecret, ...payload }),
-    signal: AbortSignal.timeout(15000),
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      secret: sharedSecret,
+      ...payload
+    }),
+    signal: AbortSignal.timeout(15000)
   });
+
   const sheetText = await sheetResponse.text();
+
   let sheetResult = {};
-  try { sheetResult = sheetText ? JSON.parse(sheetText) : {}; } catch (error) {}
+
+  try {
+    sheetResult = sheetText ? JSON.parse(sheetText) : {};
+  } catch (error) {}
+
   if (!sheetResponse.ok || sheetResult.ok !== true) {
     throw new Error(sheetResult.error || `HTTP ${sheetResponse.status}`);
   }
+
   return sheetResult;
 }
 
+// INVENTORY API
 app.get('/api/inventory', async (req, res) => {
   try {
-    const result = await customerSheetRequest({ action: 'getInventory' });
-    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, paneerKg: result.paneerKg, gheeKg: result.gheeKg, curdKg: result.curdKg, milkRate: result.milkRate, paneerRate: result.paneerRate, gheeRate: result.gheeRate, curdRate: result.curdRate, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
+    const result = await customerSheetRequest({
+      action: 'getInventory'
+    });
+
+    return res.json({
+      milkLitres: result.milkLitres,
+      milkCapacity: result.milkCapacity,
+      paneerKg: result.paneerKg,
+      gheeKg: result.gheeKg,
+      curdKg: result.curdKg,
+      milkRate: result.milkRate,
+      paneerRate: result.paneerRate,
+      gheeRate: result.gheeRate,
+      curdRate: result.curdRate,
+      cows: result.cows,
+      buffaloes: result.buffaloes,
+      goats: result.goats
+    });
+
   } catch (error) {
     console.error('Inventory request failed:', error.message);
-    return res.status(error.message === 'NOT_CONFIGURED' ? 503 : 502).json({ error: 'Could not load milk availability right now.' });
+
+    return res.status(
+      error.message === 'NOT_CONFIGURED' ? 503 : 502
+    ).json({
+      error: 'Could not load milk availability right now.'
+    });
   }
 });
 
+// MANAGER SESSION API
 app.get('/api/manager/session', (req, res) => {
-  return res.json({ manager: managerSession(req) });
+  return res.json({
+    manager: managerSession(req)
+  });
 });
 
+// ========================================
+// DHT11 + MQ-2 SENSOR API
+// ========================================
+
+// GET SENSOR DATA
 app.get('/api/temperature', (req, res) => {
+
   if (!latestTemperatureReading) {
-    return res.json({ online: false, temperatureC: null, humidityPct: null, flameDetected: null, receivedAt: null });
+    return res.json({
+      online: false,
+      temperatureC: null,
+      humidityPct: null,
+      gasRaw: null,
+      gasDetected: null,
+      receivedAt: null
+    });
   }
-  const ageMs = Date.now() - Date.parse(latestTemperatureReading.receivedAt);
-  return res.json({ ...latestTemperatureReading, online: ageMs <= 90000 });
+
+  const ageMs =
+    Date.now() - Date.parse(latestTemperatureReading.receivedAt);
+
+  return res.json({
+    ...latestTemperatureReading,
+    online: ageMs <= 90000
+  });
 });
 
+// RECEIVE ESP32 SENSOR DATA
 app.post('/api/temperature', (req, res) => {
+
   const expectedToken = process.env.ESP32_DEVICE_TOKEN;
-  if (!expectedToken) return res.status(503).json({ error: 'Temperature sensor is not configured.' });
+
+  if (!expectedToken) {
+    return res.status(503).json({
+      error: 'Temperature sensor is not configured.'
+    });
+  }
+
+  // Token verification
   const authorization = String(req.get('authorization') || '');
-  const suppliedToken = authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+
+  const suppliedToken = authorization.startsWith('Bearer ')
+    ? authorization.slice(7)
+    : '';
+
   if (!constantTimeMatch(suppliedToken, expectedToken)) {
-    return res.status(401).json({ error: 'Unauthorized sensor.' });
+    return res.status(401).json({
+      error: 'Unauthorized sensor.'
+    });
   }
 
-  const { temperatureC, humidityPct, flameDetected } = req.body ?? {};
-  if (!Number.isFinite(temperatureC) || temperatureC < -10 || temperatureC > 60 ||
-      !Number.isFinite(humidityPct) || humidityPct < 0 || humidityPct > 100 ||
-      typeof flameDetected !== 'boolean') {
-    return res.status(400).json({ error: 'Enter valid temperature, humidity, and flame readings.' });
+  // Read ESP32 payload
+  const {
+    temperatureC,
+    humidityPct,
+    gasRaw,
+    gasDetected
+  } = req.body ?? {};
+
+  // Validate DHT11 and MQ-2
+  if (
+    !Number.isFinite(temperatureC) ||
+    temperatureC < -10 ||
+    temperatureC > 60 ||
+
+    !Number.isFinite(humidityPct) ||
+    humidityPct < 0 ||
+    humidityPct > 100 ||
+
+    !Number.isInteger(gasRaw) ||
+    gasRaw < 0 ||
+    gasRaw > 4095 ||
+
+    typeof gasDetected !== 'boolean'
+  ) {
+    return res.status(400).json({
+      error: 'Enter valid temperature, humidity, and gas readings.'
+    });
   }
 
+  // Save latest readings
   latestTemperatureReading = {
     temperatureC: Math.round(temperatureC * 10) / 10,
     humidityPct: Math.round(humidityPct),
-    flameDetected,
-    receivedAt: new Date().toISOString(),
+    gasRaw: gasRaw,
+    gasDetected: gasDetected,
+    receivedAt: new Date().toISOString()
   };
-  return res.status(202).json({ ok: true, receivedAt: latestTemperatureReading.receivedAt });
+
+  return res.status(202).json({
+    ok: true,
+    receivedAt: latestTemperatureReading.receivedAt
+  });
 });
 
+// MANAGER LOGIN
 app.post('/api/manager/login', (req, res) => {
+
   const configuredPassword = process.env.MANAGER_PASSWORD;
   const { password } = req.body ?? {};
-  if (!configuredPassword) return res.status(503).json({ error: 'Manager login is not configured yet.' });
-  if (typeof password !== 'string' || !constantTimeMatch(password, configuredPassword)) {
-    return res.status(401).json({ error: 'Incorrect manager password.' });
+
+  if (!configuredPassword) {
+    return res.status(503).json({
+      error: 'Manager login is not configured yet.'
+    });
+  }
+
+  if (
+    typeof password !== 'string' ||
+    !constantTimeMatch(password, configuredPassword)
+  ) {
+    return res.status(401).json({
+      error: 'Incorrect manager password.'
+    });
   }
 
   const token = crypto.randomBytes(32).toString('hex');
   const maxAge = 8 * 60 * 60 * 1000;
+
   managerSessions.set(token, Date.now() + maxAge);
-  res.setHeader('Set-Cookie', `digitalDairyManager=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge / 1000}${req.secure ? '; Secure' : ''}`);
-  return res.json({ ok: true });
+
+  res.setHeader(
+    'Set-Cookie',
+    `digitalDairyManager=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge / 1000}${req.secure ? '; Secure' : ''}`
+  );
+
+  return res.json({
+    ok: true
+  });
 });
 
+// MANAGER LOGOUT
 app.post('/api/manager/logout', (req, res) => {
   managerSessions.delete(sessionToken(req));
   clearManagerCookie(res, req);
-  return res.json({ ok: true });
+
+  return res.json({
+    ok: true
+  });
 });
 
+// UPDATE INVENTORY
 app.post('/api/manager/inventory', async (req, res) => {
-  if (!managerSession(req)) return res.status(401).json({ error: 'Please log in as manager first.' });
-  const { milkLitres, milkCapacity, paneerKg, gheeKg, curdKg, cows, buffaloes, goats } = req.body ?? {};
-  if (!Number.isFinite(milkLitres) || milkLitres < 0 || milkLitres > 10000000) {
-    return res.status(400).json({ error: 'Enter a valid available-milk amount.' });
+
+  if (!managerSession(req)) {
+    return res.status(401).json({
+      error: 'Please log in as manager first.'
+    });
   }
-  if (!Number.isFinite(milkCapacity) || milkCapacity <= 0 || milkCapacity > 10000000 || milkLitres > milkCapacity) {
-    return res.status(400).json({ error: 'Milk available cannot be more than tank capacity.' });
+
+  const {
+    milkLitres,
+    milkCapacity,
+    paneerKg,
+    gheeKg,
+    curdKg,
+    cows,
+    buffaloes,
+    goats
+  } = req.body ?? {};
+
+  if (
+    !Number.isFinite(milkLitres) ||
+    milkLitres < 0 ||
+    milkLitres > 10000000
+  ) {
+    return res.status(400).json({
+      error: 'Enter a valid available-milk amount.'
+    });
   }
-  if (![paneerKg, gheeKg, curdKg].every(function (value) { return Number.isFinite(value) && value >= 0 && value <= 10000000; })) {
-    return res.status(400).json({ error: 'Enter valid paneer, ghee, and curd quantities.' });
+
+  if (
+    !Number.isFinite(milkCapacity) ||
+    milkCapacity <= 0 ||
+    milkCapacity > 10000000 ||
+    milkLitres > milkCapacity
+  ) {
+    return res.status(400).json({
+      error: 'Milk available cannot be more than tank capacity.'
+    });
   }
-  if (![cows, buffaloes, goats].every(function (value) { return Number.isInteger(value) && value >= 0 && value <= 1000000; })) {
-    return res.status(400).json({ error: 'Enter valid animal counts.' });
+
+  if (
+    ![paneerKg, gheeKg, curdKg].every(
+      value => Number.isFinite(value) && value >= 0 && value <= 10000000
+    )
+  ) {
+    return res.status(400).json({
+      error: 'Enter valid paneer, ghee, and curd quantities.'
+    });
   }
+
+  if (
+    ![cows, buffaloes, goats].every(
+      value => Number.isInteger(value) && value >= 0 && value <= 1000000
+    )
+  ) {
+    return res.status(400).json({
+      error: 'Enter valid animal counts.'
+    });
+  }
+
   try {
-    const result = await customerSheetRequest({ action: 'updateInventory', milkLitres, milkCapacity, paneerKg, gheeKg, curdKg, cows, buffaloes, goats });
-    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, paneerKg: result.paneerKg, gheeKg: result.gheeKg, curdKg: result.curdKg, milkRate: result.milkRate, paneerRate: result.paneerRate, gheeRate: result.gheeRate, curdRate: result.curdRate, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
+    const result = await customerSheetRequest({
+      action: 'updateInventory',
+      milkLitres,
+      milkCapacity,
+      paneerKg,
+      gheeKg,
+      curdKg,
+      cows,
+      buffaloes,
+      goats
+    });
+
+    return res.json({
+      milkLitres: result.milkLitres,
+      milkCapacity: result.milkCapacity,
+      paneerKg: result.paneerKg,
+      gheeKg: result.gheeKg,
+      curdKg: result.curdKg,
+      milkRate: result.milkRate,
+      paneerRate: result.paneerRate,
+      gheeRate: result.gheeRate,
+      curdRate: result.curdRate,
+      cows: result.cows,
+      buffaloes: result.buffaloes,
+      goats: result.goats
+    });
+
   } catch (error) {
     console.error('Inventory update failed:', error.message);
-    return res.status(502).json({ error: 'Could not save the milk availability right now.' });
+
+    return res.status(502).json({
+      error: 'Could not save the milk availability right now.'
+    });
   }
 });
 
+// UPDATE PRODUCT PRICES
 app.post('/api/manager/prices', async (req, res) => {
-  if (!managerSession(req)) return res.status(401).json({ error: 'Please log in as manager first.' });
-  const { milkRate, paneerRate, gheeRate, curdRate } = req.body ?? {};
-  if (![milkRate, paneerRate, gheeRate, curdRate].every(function (value) { return Number.isFinite(value) && value > 0 && value <= 10000000; })) {
-    return res.status(400).json({ error: 'Enter a valid positive price for each product.' });
+
+  if (!managerSession(req)) {
+    return res.status(401).json({
+      error: 'Please log in as manager first.'
+    });
   }
+
+  const {
+    milkRate,
+    paneerRate,
+    gheeRate,
+    curdRate
+  } = req.body ?? {};
+
+  if (
+    ![milkRate, paneerRate, gheeRate, curdRate].every(
+      value => Number.isFinite(value) && value > 0 && value <= 10000000
+    )
+  ) {
+    return res.status(400).json({
+      error: 'Enter a valid positive price for each product.'
+    });
+  }
+
   try {
-    const result = await customerSheetRequest({ action: 'updatePrices', milkRate, paneerRate, gheeRate, curdRate });
-    return res.json({ milkLitres: result.milkLitres, milkCapacity: result.milkCapacity, paneerKg: result.paneerKg, gheeKg: result.gheeKg, curdKg: result.curdKg, milkRate: result.milkRate, paneerRate: result.paneerRate, gheeRate: result.gheeRate, curdRate: result.curdRate, cows: result.cows, buffaloes: result.buffaloes, goats: result.goats });
+    const result = await customerSheetRequest({
+      action: 'updatePrices',
+      milkRate,
+      paneerRate,
+      gheeRate,
+      curdRate
+    });
+
+    return res.json({
+      milkLitres: result.milkLitres,
+      milkCapacity: result.milkCapacity,
+      paneerKg: result.paneerKg,
+      gheeKg: result.gheeKg,
+      curdKg: result.curdKg,
+      milkRate: result.milkRate,
+      paneerRate: result.paneerRate,
+      gheeRate: result.gheeRate,
+      curdRate: result.curdRate,
+      cows: result.cows,
+      buffaloes: result.buffaloes,
+      goats: result.goats
+    });
+
   } catch (error) {
     console.error('Price update failed:', error.message);
-    return res.status(502).json({ error: 'Could not save product prices right now.' });
+
+    return res.status(502).json({
+      error: 'Could not save product prices right now.'
+    });
   }
 });
 
+// CREATE ORDER
 app.post('/api/orders', async (req, res) => {
-  const { name, phone, address, paymentMethod, items } = req.body ?? {};
+
+  const {
+    name,
+    phone,
+    address,
+    paymentMethod,
+    items
+  } = req.body ?? {};
+
   const validProducts = ['Milk', 'Paneer', 'Ghee', 'Curd'];
-  if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 80 || typeof phone !== 'string' || phone.length > 20 || typeof address !== 'string' || address.trim().length < 8 || address.trim().length > 300 || !['Cash on delivery', 'UPI on delivery'].includes(paymentMethod) || !Array.isArray(items) || items.length < 1 || items.length > 4 || !items.every(function (item) { return item && validProducts.includes(item.product) && Number.isFinite(item.quantity) && item.quantity > 0 && item.quantity <= 10000; }) || new Set(items.map(function (item) { return item.product; })).size !== items.length) {
-    return res.status(400).json({ error: 'Enter valid order details.' });
+
+  if (
+    typeof name !== 'string' ||
+    name.trim().length < 2 ||
+    name.trim().length > 80 ||
+    typeof phone !== 'string' ||
+    phone.length > 20 ||
+    typeof address !== 'string' ||
+    address.trim().length < 8 ||
+    address.trim().length > 300 ||
+    !['Cash on delivery', 'UPI on delivery'].includes(paymentMethod) ||
+    !Array.isArray(items) ||
+    items.length < 1 ||
+    items.length > 4 ||
+    !items.every(item =>
+      item &&
+      validProducts.includes(item.product) &&
+      Number.isFinite(item.quantity) &&
+      item.quantity > 0 &&
+      item.quantity <= 10000
+    ) ||
+    new Set(items.map(item => item.product)).size !== items.length
+  ) {
+    return res.status(400).json({
+      error: 'Enter valid order details.'
+    });
   }
+
   const digits = phone.replace(/\D/g, '');
-  if (digits.length < 10 || digits.length > 15) return res.status(400).json({ error: 'Enter a phone number with 10 to 15 digits.' });
+
+  if (digits.length < 10 || digits.length > 15) {
+    return res.status(400).json({
+      error: 'Enter a phone number with 10 to 15 digits.'
+    });
+  }
+
   try {
-    const result = await customerSheetRequest({ action: 'createOrder', name: name.trim(), phone: phone.trim(), address: address.trim(), paymentMethod, items });
-    return res.json({ ok: true, receiptId: result.receiptId, orderedAt: result.orderedAt, items: result.items, total: result.total, inventory: result.inventory });
+    const result = await customerSheetRequest({
+      action: 'createOrder',
+      name: name.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
+      paymentMethod,
+      items
+    });
+
+    return res.json({
+      ok: true,
+      receiptId: result.receiptId,
+      orderedAt: result.orderedAt,
+      items: result.items,
+      total: result.total,
+      inventory: result.inventory
+    });
+
   } catch (error) {
     console.error('Order request failed:', error.message);
-    const message = error.message === 'OUT_OF_STOCK'
-      ? 'Some items are no longer available in that quantity. Please adjust your basket and try again.'
-      : error.message === 'PRICE_NOT_SET'
-        ? 'The manager has not set a price for one or more products yet.'
-        : 'Could not place your order right now. Please try again later.';
-    return res.status(error.message === 'NOT_CONFIGURED' ? 503 : error.message === 'OUT_OF_STOCK' ? 409 : error.message === 'PRICE_NOT_SET' ? 400 : 502).json({ error: message });
+
+    const message =
+      error.message === 'OUT_OF_STOCK'
+        ? 'Some items are no longer available in that quantity. Please adjust your basket and try again.'
+        : error.message === 'PRICE_NOT_SET'
+          ? 'The manager has not set a price for one or more products yet.'
+          : 'Could not place your order right now. Please try again later.';
+
+    return res.status(
+      error.message === 'NOT_CONFIGURED'
+        ? 503
+        : error.message === 'OUT_OF_STOCK'
+          ? 409
+          : error.message === 'PRICE_NOT_SET'
+            ? 400
+            : 502
+    ).json({
+      error: message
+    });
   }
 });
 
+// CUSTOMER LOGIN
 app.post('/api/login', async (req, res) => {
+
   const now = Date.now();
   const ip = req.ip || 'unknown';
   const windowMs = 10 * 60 * 1000;
+
   let attempts = attemptsByIp.get(ip);
+
   if (!attempts || now - attempts.startedAt > windowMs) {
-    attempts = { startedAt: now, count: 0 };
+    attempts = {
+      startedAt: now,
+      count: 0
+    };
   }
+
   if (attempts.count >= 20) {
     attemptsByIp.set(ip, attempts);
-    return res.status(429).json({ error: 'Too many sign-in attempts. Please wait a few minutes and try again.' });
+
+    return res.status(429).json({
+      error: 'Too many sign-in attempts. Please wait a few minutes and try again.'
+    });
   }
+
   attempts.count += 1;
   attemptsByIp.set(ip, attempts);
+
   if (attemptsByIp.size > 5000) {
     for (const [key, value] of attemptsByIp) {
-      if (now - value.startedAt > windowMs) attemptsByIp.delete(key);
+      if (now - value.startedAt > windowMs) {
+        attemptsByIp.delete(key);
+      }
     }
   }
 
-  const { name, phone, consent } = req.body ?? {};
-  if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 80) {
-    return res.status(400).json({ error: 'Enter a name between 2 and 80 characters.' });
+  const {
+    name,
+    phone,
+    consent
+  } = req.body ?? {};
+
+  if (
+    typeof name !== 'string' ||
+    name.trim().length < 2 ||
+    name.trim().length > 80
+  ) {
+    return res.status(400).json({
+      error: 'Enter a name between 2 and 80 characters.'
+    });
   }
+
   if (typeof phone !== 'string' || phone.length > 20) {
-    return res.status(400).json({ error: 'Enter a valid phone number.' });
+    return res.status(400).json({
+      error: 'Enter a valid phone number.'
+    });
   }
+
   const digits = phone.replace(/\D/g, '');
+
   if (digits.length < 10 || digits.length > 15) {
-    return res.status(400).json({ error: 'Enter a phone number with 10 to 15 digits.' });
+    return res.status(400).json({
+      error: 'Enter a phone number with 10 to 15 digits.'
+    });
   }
+
   if (consent !== true) {
-    return res.status(400).json({ error: 'Please agree to the customer data notice to continue.' });
+    return res.status(400).json({
+      error: 'Please agree to the customer data notice to continue.'
+    });
   }
+
   try {
-    await customerSheetRequest({ name: name.trim(), phone: phone.trim(), phoneDigits: digits, signedInAt: new Date().toISOString() });
-    return res.json({ name: name.trim() });
+    await customerSheetRequest({
+      name: name.trim(),
+      phone: phone.trim(),
+      phoneDigits: digits,
+      signedInAt: new Date().toISOString()
+    });
+
+    return res.json({
+      name: name.trim()
+    });
+
   } catch (error) {
     console.error('Customer sheet request failed:', error.message);
-    return res.status(error.message === 'NOT_CONFIGURED' ? 503 : 502).json({ error: 'Could not save your details right now. Please try again later.' });
+
+    return res.status(
+      error.message === 'NOT_CONFIGURED' ? 503 : 502
+    ).json({
+      error: 'Could not save your details right now. Please try again later.'
+    });
   }
 });
 
+// START SERVER
 const port = Number(process.env.PORT || 3000);
-app.listen(port, '0.0.0.0', () => console.log(`Digital Dairy running on port ${port}`));
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Digital Dairy running on port ${port}`);
+});
